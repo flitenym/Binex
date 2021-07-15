@@ -1,0 +1,108 @@
+﻿<UserControl
+    x:Class="SharedLibrary.View.InfoView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Textblock.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="3" />
+            <ColumnDefinition Width="0.5*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="Глобальные ошибки хранение в течение 1 недели"
+            TextWrapping="Wrap" />
+        <ScrollViewer
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="5"
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{DynamicResource ScrollViewerStyle}"
+            VerticalScrollBarVisibility="Auto">
+            <ListView
+                Width="Auto"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Foreground="{DynamicResource WindowForeground}"
+                ItemsSource="{Binding StackTraces, Mode=TwoWay}"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                VirtualizingStackPanel.IsVirtualizing="True"
+                SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBox
+                                Grid.Row="0"
+                                Width="Auto"
+                                HorizontalAlignment="Center"
+                                IsReadOnly="True"
+                                Text="{Binding Path=Date, StringFormat='dd-MM-yyyy HH:mm:ss'}"
+                                TextWrapping="Wrap" />
+                            <TextBox
+                                Grid.Row="1"
+                                Width="Auto"
+                                IsReadOnly="True"
+                                Text="{Binding Path=StackTrace}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ScrollViewer>
+        <GridSplitter
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Width="Auto"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            ShowsPreview="True" />
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="Текущие активные задания"
+            TextWrapping="Wrap" />
+        <ScrollViewer
+            Grid.Row="1"
+            Grid.Column="2"
+            Margin="5"
+            HorizontalScrollBarVisibility="Auto"
+            Style="{DynamicResource ScrollViewerStyle}"
+            VerticalScrollBarVisibility="Auto">
+            <ListView
+                VirtualizingStackPanel.IsVirtualizing="True"
+                Width="Auto"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Foreground="{DynamicResource WindowForeground}"
+                ItemsSource="{Binding Path=ActiveTasks, Mode=TwoWay}"
+                ScrollViewer.CanContentScroll="True" />
+        </ScrollViewer>
+    </Grid>
+</UserControl>

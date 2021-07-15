@@ -1,0 +1,26 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Red.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Blue.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+
+
+    <Color x:Key="Red">#ff4081</Color>
+    <Color x:Key="LightWhite">#f5fffa</Color>
+
+    <SolidColorBrush x:Key="DataGridRowSelected" Color="{StaticResource Red}" />
+    <SolidColorBrush x:Key="AfterCloseWindowButtonForeground" Color="{StaticResource LightWhite}" />
+    <SolidColorBrush x:Key="GridSplitterBackground" Color="{StaticResource Red}" />
+
+    <Style
+        x:Key="ActionButton"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource ActionButtonForeground}" />
+    </Style>
+
+</ResourceDictionary>
