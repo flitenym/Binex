@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dockablz="clr-namespace:Dragablz.Dockablz;assembly=Dragablz"
     xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz"
-    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:nodes="clr-namespace:SharedLibrary.Helper.Classes"
@@ -97,7 +97,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     IsHyphenationEnabled="True"
-                                    Style="{DynamicResource MaterialDesignTitleTextBlock}"
+                                    Style="{DynamicResource MaterialDesignHeadline6TextBlock}"
                                     Text="{Binding Name}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
@@ -271,14 +271,18 @@
                 </i:Interaction.Triggers>
             </TreeView>
         </Grid>
+        <Grid Height="55" VerticalAlignment="Bottom">
+            <materialDesign:Snackbar
+                x:Name="Snackbar"
+                HorizontalAlignment="Stretch"
+                ActionButtonStyle="{DynamicResource MaterialDesignFlatButton}"
+                Background="{DynamicResource SnackBarBackGround}"
+                Foreground="{DynamicResource WindowForeground}"
+                MessageQueue="{Binding IsMessagePanelContent}"
+            />
+        </Grid>
 
-        <materialDesign:Snackbar
-            x:Name="Snackbar"
-            HorizontalAlignment="Stretch"
-            ActionButtonStyle="{DynamicResource MaterialDesignFlatButton}"
-            Background="{DynamicResource SnackBarBackGround}"
-            Foreground="{DynamicResource WindowForeground}"
-            MessageQueue="{Binding IsMessagePanelContent}" />
+        
 
         <Grid
             x:Name="GridLoading"

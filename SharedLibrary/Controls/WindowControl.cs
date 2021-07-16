@@ -47,7 +47,7 @@ namespace SharedLibrary.Controls
 
             if (WindowState == WindowState.Maximized)
             {
-                border.Margin = new Thickness(-1, 6, -1, 9); 
+                border.Margin = new Thickness(-1, 6, -1, 5); 
                 titleTextBlock.Margin = new Thickness(14, 0, 0, 0);
                 buttonsStackPanel.Margin = new Thickness(0, 0, 8, 0);
                 restoreButton.Content = 2;

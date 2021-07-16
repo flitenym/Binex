@@ -139,7 +139,7 @@ namespace SharedLibrary.ViewModel
             }
             set
             {
-                isMessagePanelContent.IgnoreDuplicate = true;
+                isMessagePanelContent.DiscardDuplicates = true;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsMessagePanelContent)));
             }
         }

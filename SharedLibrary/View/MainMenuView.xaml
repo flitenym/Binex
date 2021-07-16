@@ -10,7 +10,7 @@
     <Grid>
         <TextBlock
             HorizontalAlignment="Center"
-            Style="{DynamicResource MaterialDesignTitleTextBlock}"
+            Style="{DynamicResource MaterialDesignHeadline6TextBlock}"
             Text="Главное меню" />
     </Grid>
 </UserControl>

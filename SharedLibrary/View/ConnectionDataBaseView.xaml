@@ -39,7 +39,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             HorizontalAlignment="Center"
-                            Style="{StaticResource MaterialDesignDisplay1TextBlock}"
+                            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                             Text="Проверка подключения" />
                         <CheckBox
                             Grid.Column="1"
