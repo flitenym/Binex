@@ -7,7 +7,7 @@ using SharedLibrary.Helper.StaticInfo;
 using static SharedLibrary.Helper.StaticInfo.Enums;
 using SharedLibrary.Provider;
 
-namespace Van.Model
+namespace SharedLibrary.Model
 {
     class InfoModel : ModuleBase
     {

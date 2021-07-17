@@ -6,7 +6,7 @@ using SharedLibrary.ViewModel;
 using SharedLibrary.Helper.StaticInfo;
 using static SharedLibrary.Helper.StaticInfo.Enums;
 
-namespace Van.Model
+namespace SharedLibrary.Model
 {
     class MainMenuModel : ModuleBase
     {
