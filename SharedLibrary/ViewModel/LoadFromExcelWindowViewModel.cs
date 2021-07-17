@@ -39,7 +39,7 @@ namespace SharedLibrary.ViewModel
 $@"При загрузке из Excel следует придерживаться правил:
 1. Загрузка будет работать только над объектом, который выбран в странице ""{Helper.StaticInfo.Types.ViewData.DataBaseBrowsing.Name}"".
 2. Необходимо следовать изначальной последовательности колонок.
-3. В случае если у вас для первой строки в Excel используются названия колонок, то следует снять флаг.";
+3. В случае если у нет названия колонок в Excel файле, то следует снять флаг.";
 
         #region Игнорирование первой строки в листе Excel
 
@@ -159,12 +159,25 @@ $@"При загрузке из Excel следует придерживатьс�
         {
             using (var stream = File.Open(fileName, FileMode.Open, FileAccess.Read))
             {
-                using (IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream))
+                if (Path.GetExtension(fileName) == ".csv")
                 {
-                    return reader.AsDataSet(new ExcelDataSetConfiguration()
+                    using (IExcelDataReader reader = ExcelReaderFactory.CreateCsvReader(stream))
                     {
-                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = ignoreFirstRow }
-                    });
+                        return reader.AsDataSet(new ExcelDataSetConfiguration()
+                        {
+                            ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = ignoreFirstRow }
+                        });
+                    }
+                }
+                else
+                {
+                    using (IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        return reader.AsDataSet(new ExcelDataSetConfiguration()
+                        {
+                            ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = ignoreFirstRow }
+                        });
+                    }
                 }
             }
         }

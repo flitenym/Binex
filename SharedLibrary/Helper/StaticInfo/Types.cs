@@ -22,7 +22,7 @@ namespace SharedLibrary.Helper.StaticInfo
 
             #region Правое меню
 
-            public static ViewInfo ConnectionDataBase = new ViewInfo { Name = "Подключение к БД", View = new Guid("2340A6C5-1468-4CF6-BF1D-5DDE403F8034"), Num = 1, ModelClass = ModelBaseClasses.RightMenu };
+            public static ViewInfo ConnectionDataBase = new ViewInfo { Name = "Подключение к БД", View = new Guid("2340A6C5-1468-4CF6-BF1D-5DDE403F8034"), Num = 1, IsActive = false, ModelClass = ModelBaseClasses.RightMenu };
 
             public static ViewInfo DataBaseBrowsing = new ViewInfo { Name = "Локальные данные", View = new Guid("12011025-144B-4BE8-96C4-DAD33B8778FC"), Num = 2, ModelClass = ModelBaseClasses.RightMenu };
 

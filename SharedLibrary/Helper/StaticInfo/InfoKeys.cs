@@ -2,7 +2,9 @@
 {
     public static class InfoKeys
     {
-        public static string ExtendedPropertiesKey = "ShowInTable";
+        public static string ExtendedPropertiesShowInTableKey = "ShowInTable";
+
+        public static string ExtendedPropertiesIsReadOnlyKey = "IsReadOnly";
 
         #region Ключи в настройках
 

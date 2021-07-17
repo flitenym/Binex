@@ -57,8 +57,13 @@ namespace SharedLibrary.Helper
             var column = table.Columns[e.Column.Header as string];
             e.Column.Header = table.Columns[e.Column.Header as string].Caption;
 
-            if (GetProperty(column, InfoKeys.ExtendedPropertiesKey)) {
+            if (GetProperty(column, InfoKeys.ExtendedPropertiesShowInTableKey)) {
                 e.Column.Visibility = Visibility.Collapsed;
+            }
+
+            if (GetProperty(column, InfoKeys.ExtendedPropertiesIsReadOnlyKey))
+            {
+                e.Column.IsReadOnly = true;
             }
         }
 
@@ -91,7 +96,14 @@ namespace SharedLibrary.Helper
                 {
                     if (prop.Attributes[i].GetType() == typeof(ColumnDataAttribute))
                     {
-                        SetProperty(column, InfoKeys.ExtendedPropertiesKey);
+                        if (((ColumnDataAttribute)prop.Attributes[i]).ShowInTable == false)
+                        {
+                            SetProperty(column, InfoKeys.ExtendedPropertiesShowInTableKey);
+                        }
+                        if (((ColumnDataAttribute)prop.Attributes[i]).IsReadOnly == true)
+                        {
+                            SetProperty(column, InfoKeys.ExtendedPropertiesIsReadOnlyKey);
+                        }
                     }
                 }
 
@@ -144,10 +156,16 @@ namespace SharedLibrary.Helper
                 object value;
                 var databaseType = properties[i].Name.GetType();
 
+                (bool isHaveDefault, object defaultValue) = GetDefaultValue(properties[i], DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
+
                 //в случае если столбцов в Excel меньше чем в БД, тогда искусственно заполним default значениями
                 if (j >= row.Table.Columns.Count)
                 {
-                    if (type.IsValueType)
+                    if (isHaveDefault)
+                    {
+                        value = defaultValue;
+                    }
+                    else if (type.IsValueType)
                     {
                         value = Activator.CreateInstance(type);
                     }
@@ -160,7 +178,11 @@ namespace SharedLibrary.Helper
                 {
                     var columnName = row.Table.Columns[j].ColumnName;
 
-                    if (row[columnName] == DBNull.Value)
+                    if (isHaveDefault)
+                    {
+                        value = defaultValue;
+                    }
+                    else if (row[columnName] == DBNull.Value)
                     {
                         value = null;
                     }
@@ -204,6 +226,22 @@ namespace SharedLibrary.Helper
             }
 
             return properties.ToArray();
+        }
+
+        public static (bool isHaveDefault, object defaultValue) GetDefaultValue(PropertyInfo property, object defaultValueWhenStringEmpty = null)
+        {
+            var columnDataAttributes = (ColumnDataAttribute)property.GetCustomAttributes(typeof(ColumnDataAttribute), true).FirstOrDefault();
+            if (columnDataAttributes != null && columnDataAttributes.DefaultValue != null)
+            {
+                if (columnDataAttributes.DefaultValue is string defaultValue && defaultValue == "" && defaultValueWhenStringEmpty != null)
+                {
+                    return (true, defaultValueWhenStringEmpty);
+                }
+
+                return (true, columnDataAttributes.DefaultValue);
+            }
+
+            return (false, null);
         }
 
         public static bool ClearDataTable(DataTable dataTable, object value)

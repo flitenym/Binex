@@ -61,5 +61,19 @@ namespace SharedLibrary.Helper.StaticInfo
             [Description("Обычная тема")]
             GeneralTheme = 1
         }
+
+        public enum YesOrNo
+        {
+            /// <summary>
+            /// Да
+            /// </summary>
+            [Description("Да")]
+            Yes,
+            /// <summary>
+            /// Нет
+            /// </summary>
+            [Description("Нет")]
+            No
+        }
     }
 }
