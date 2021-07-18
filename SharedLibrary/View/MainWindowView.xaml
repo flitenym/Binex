@@ -24,7 +24,7 @@
                 Storyboard.TargetName="GridLeftMenu"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
                 To="0"
-                Duration="0:0:0.35" />
+                Duration="0:0:0.25" />
         </Storyboard>
         <!--  анимация закрытия меню  -->
         <Storyboard x:Key="CloseLeftMenu" Timeline.DesiredFrameRate="60">
@@ -32,7 +32,7 @@
                 Storyboard.TargetName="GridLeftMenu"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
                 To="-355"
-                Duration="0:0:0.35" />
+                Duration="0:0:0.25" />
         </Storyboard>
         <!--  анимация открытия меню  -->
         <Storyboard x:Key="OpenRightMenu" Timeline.DesiredFrameRate="60">
@@ -40,7 +40,7 @@
                 Storyboard.TargetName="GridRightMenu"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
                 To="0"
-                Duration="0:0:0.3" />
+                Duration="0:0:0.2" />
         </Storyboard>
         <!--  анимация закрытия меню  -->
         <Storyboard x:Key="CloseRightMenu" Timeline.DesiredFrameRate="60">
@@ -48,7 +48,7 @@
                 Storyboard.TargetName="GridRightMenu"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
                 To="255"
-                Duration="0:0:0.3" />
+                Duration="0:0:0.2" />
         </Storyboard>
     </Window.Resources>
 

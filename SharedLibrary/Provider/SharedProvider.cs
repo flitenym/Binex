@@ -106,6 +106,10 @@ namespace SharedLibrary.Provider
             {
                 Mapping.Add(key, obj);
             }
+            else
+            {
+                Mapping[key] = obj;
+            }
         }
 
         public object GetFromDictionary(string key)

@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.LocalDataBase;
 using SharedLibrary.LocalDataBase.Models;
@@ -51,26 +52,7 @@ namespace SharedLibrary.DataBase
                     canGetData = true;
                     await Message("ConnectionString верный");
 
-                    if (connectionStringData == null)
-                    {
-                        using (var slc = new SQLiteConnection(SQLExecutor.LoadConnectionString))
-                        {
-                            await slc.OpenAsync();
-                            connectionStringData = (await slc.QueryAsync<Settings>($"SELECT * FROM {nameof(Settings)} Where Name = '{InfoKeys.ConnectionStringKey}'")).FirstOrDefault();
-                        }
-
-                        if (connectionStringData == null)
-                        {
-                            connectionStringData = new Settings() { Name = InfoKeys.ConnectionStringKey, Value = connectionString };
-                            await SQLExecutor.InsertExecutorAsync(connectionStringData, connectionStringData);
-                        }
-                    }
-
-                    if (connectionStringData != null && connectionStringData.Value != connectionString)
-                    {
-                        connectionStringData.Value = connectionString;
-                        await SQLExecutor.UpdateExecutorAsync(connectionStringData, connectionStringData, connectionStringData.ID);
-                    }
+                    await HelperMethods.UpdateByKeyInDB(InfoKeys.ConnectionStringKey, connectionString);
                 }
             }
             catch (Exception ex)

@@ -20,6 +20,10 @@
 
         public static string ThemesKey = "Themes";
 
+        public static string ApiKeyBinanceKey = "ApiKey";
+
+        public static string ApiSecretBinanceKey = "ApiSecret";
+
         #endregion
     }
 }

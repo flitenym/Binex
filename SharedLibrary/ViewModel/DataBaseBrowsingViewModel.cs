@@ -329,16 +329,12 @@ namespace SharedLibrary.ViewModel
                     loadFromExcelWindow.DataContext = vm;
                     if (loadFromExcelWindow.ShowDialog() == true)
                     {
-                        Task.Factory.StartNew(() =>
-                            Select()
-                        );
+                        Task.Factory.StartNew(async () => await Select());
                     }
                 }
                 catch (Exception ex)
                 {
-                    Task.Factory.StartNew(() =>
-                        Message($"{ex.Message}")
-                    );
+                    Task.Factory.StartNew(async () => await Message ($"{ex.Message}"));
                 }
             }
         }

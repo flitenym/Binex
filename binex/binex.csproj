@@ -237,7 +237,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LocalDataBase\DataInfo.cs" />
+    <Compile Include="Model\BinanceModel.cs" />
+    <Compile Include="ViewModel\BinanceViewModel.cs" />
     <Compile Include="ViewModel\TestViewModel.cs" />
+    <Compile Include="View\BinanceView.xaml.cs">
+      <DependentUpon>BinanceView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TestView.xaml.cs">
       <DependentUpon>TestView.xaml</DependentUpon>
     </Compile>
@@ -297,6 +302,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="View\BinanceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\TestView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

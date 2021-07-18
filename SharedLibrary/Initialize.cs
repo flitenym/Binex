@@ -17,7 +17,7 @@ namespace SharedLibrary
     {
         public static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            Task.Factory.StartNew(() => HelperMethods.Message($"Глобальная ошибка: {e.Exception.Message}"));
+            Task.Factory.StartNew(async () => await HelperMethods.Message($"Глобальная ошибка: {e.Exception.Message}"));
 
             var infoVM = SharedProvider.GetFromDictionaryByKey(nameof(InfoViewModel)) as InfoViewModel ?? new InfoViewModel();
             infoVM.UpdateStackTrace(e.Exception.StackTrace);
@@ -32,54 +32,57 @@ namespace SharedLibrary
             Application.Current.MainWindow = splashScreen;
             splashScreen.Show();
 
-            Task.Factory.StartNew(() =>
+            Application.Current.Dispatcher.InvokeAsync(async () =>
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                //Все вьюшки
+                SharedProvider.SetToSingleton(
+                InfoKeys.ModulesKey,
+                HelperMethods.GetAllInstancesOf(new List<ModuleBase>()).Where(x => x.IsActive).ToList());
+
+                //Все темы
+                SharedProvider.SetToSingleton(
+                InfoKeys.ThemesKey,
+                HelperMethods.GetAllInstancesOf(new List<ThemeBase>()).ToList());
+
+                //Основная ViewModel
+                var vm = new MainWindowViewModel();
+                SharedProvider.SetToSingleton(nameof(MainWindowViewModel), vm);
+
+                var infovm = new InfoViewModel();
+                SharedProvider.SetToSingleton(nameof(InfoViewModel), infovm);
+
+                var apiKey = await HelperMethods.GetByKeyInDB(InfoKeys.ApiKeyBinanceKey);
+                SharedProvider.SetToSingleton(InfoKeys.ApiKeyBinanceKey, apiKey?.Value);
+
+                var apiSecret = await HelperMethods.GetByKeyInDB(InfoKeys.ApiSecretBinanceKey);
+                SharedProvider.SetToSingleton(InfoKeys.ApiSecretBinanceKey, apiSecret?.Value);
+
+                var mainWindow = new MainWindowView();
+
+                mainWindow.DataContext = vm;
+                Application.Current.MainWindow = mainWindow;
+                mainWindow.Show();
+                splashScreen.Close();
+                mainWindow.Closing += async (s, args) =>
                 {
-                    //Все вьюшки
-                    SharedProvider.SetToSingleton(
-                        InfoKeys.ModulesKey,
-                        HelperMethods.GetAllInstancesOf<ModuleBase>(new List<ModuleBase>()).Where(x => x.IsActive).ToList());
-
-                    //Все темы
-                    SharedProvider.SetToSingleton(
-                        InfoKeys.ThemesKey,
-                        HelperMethods.GetAllInstancesOf<ThemeBase>(new List<ThemeBase>()).ToList());
-
-                    //Основная ViewModel
-                    var vm = new MainWindowViewModel();
-                    SharedProvider.SetToSingleton(nameof(MainWindowViewModel), vm);
-
-                    var infovm = new InfoViewModel();
-                    SharedProvider.SetToSingleton(nameof(InfoViewModel), infovm);
-
-                    var mainWindow = new MainWindowView();
-
-                    mainWindow.DataContext = vm;
-                    Application.Current.MainWindow = mainWindow;
-                    mainWindow.Show();
-                    splashScreen.Close();
-                    mainWindow.Closing += async (s, args) =>
+                    try
                     {
-                        try
-                        {
-                            if (vm.SelectedTheme != null)
-                                vm.SelectedTheme.Deactivate();
+                        if (vm.SelectedTheme != null)
+                            vm.SelectedTheme.Deactivate();
 
-                            if (vm.SelectedThemeDarkOrLight != null)
-                                vm.SelectedThemeDarkOrLight.Deactivate();
+                        if (vm.SelectedThemeDarkOrLight != null)
+                            vm.SelectedThemeDarkOrLight.Deactivate();
 
-                            if (vm.SelectedViewModel != null)
-                                vm.SelectedViewModel.ModuleBaseItem.Deactivate();
+                        if (vm.SelectedViewModel != null)
+                            vm.SelectedViewModel.ModuleBaseItem.Deactivate();
 
-                            Application.Current.Dispatcher.UnhandledException -= OnDispatcherUnhandledException;
-                        }
-                        catch (Exception ex)
-                        {
-                            await HelperMethods.Message($"{ex.Message}");
-                        }
-                    };
-                });
+                        Application.Current.Dispatcher.UnhandledException -= OnDispatcherUnhandledException;
+                    }
+                    catch (Exception ex)
+                    {
+                        await HelperMethods.Message($"{ex.Message}");
+                    }
+                };
             });
         }
     }

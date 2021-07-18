@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
@@ -9,9 +10,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Dapper;
 using SharedLibrary.AbstractClasses;
 using SharedLibrary.Helper.Attributes;
 using SharedLibrary.Helper.StaticInfo;
+using SharedLibrary.LocalDataBase;
+using SharedLibrary.LocalDataBase.Models;
 using SharedLibrary.Provider;
 using SharedLibrary.ViewModel;
 
@@ -311,6 +315,39 @@ namespace SharedLibrary.Helper
             var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == AppDomain.CurrentDomain.FriendlyName.Replace(".exe", "")) ?? Assembly.GetExecutingAssembly();
 
             return assembly.GetName().Version.ToString();
+        }
+
+        public static async Task UpdateByKeyInDB(string key, string value, Settings settingsData = null)
+        {
+            if (settingsData == null)
+            {
+                using (var slc = new SQLiteConnection(SQLExecutor.LoadConnectionString))
+                {
+                    await slc.OpenAsync();
+                    settingsData = (await slc.QueryAsync<Settings>($"SELECT * FROM {nameof(Settings)} Where Name = '{key}'")).FirstOrDefault();
+                }
+
+                if (settingsData == null)
+                {
+                    settingsData = new Settings() { Name = key, Value = value };
+                    await SQLExecutor.InsertExecutorAsync(settingsData, settingsData);
+                }
+            }
+
+            if (settingsData != null && settingsData.Value != value)
+            {
+                settingsData.Value = value;
+                await SQLExecutor.UpdateExecutorAsync(settingsData, settingsData, settingsData.ID);
+            }
+        }
+
+        public static async Task<Settings> GetByKeyInDB(string key)
+        {
+            using (var slc = new SQLiteConnection(SQLExecutor.LoadConnectionString))
+            {
+                await slc.OpenAsync();
+                return (await slc.QueryAsync<Settings>($"SELECT * FROM {nameof(Settings)} Where Name = '{key}'")).FirstOrDefault();
+            }
         }
     }
 }
