@@ -239,17 +239,17 @@
     <Compile Include="LocalDataBase\DataInfo.cs" />
     <Compile Include="Model\BinanceModel.cs" />
     <Compile Include="ViewModel\BinanceViewModel.cs" />
-    <Compile Include="ViewModel\TestViewModel.cs" />
+    <Compile Include="ViewModel\BinancePayViewModel.cs" />
     <Compile Include="View\BinanceView.xaml.cs">
       <DependentUpon>BinanceView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\TestView.xaml.cs">
-      <DependentUpon>TestView.xaml</DependentUpon>
+    <Compile Include="View\BinancePayView.xaml.cs">
+      <DependentUpon>BinancePayView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper\StaticInfo\Types.cs" />
-    <Compile Include="Model\TestModel.cs" />
+    <Compile Include="Model\BinancePayModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -306,7 +306,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\TestView.xaml">
+    <Page Include="View\BinancePayView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

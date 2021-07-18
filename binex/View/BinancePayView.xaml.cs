@@ -8,9 +8,9 @@ namespace binex.View
     /// <summary>
     /// Логика взаимодействия для TestView.xaml
     /// </summary>
-    public partial class TestView : UserControl, IDisposable
+    public partial class BinancePayView : UserControl, IDisposable
     {
-        public TestView()
+        public BinancePayView()
         {
             InitializeComponent();
         }
