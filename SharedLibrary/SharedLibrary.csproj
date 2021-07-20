@@ -107,6 +107,7 @@
     <Compile Include="Helper\StaticInfo\SettingsDictionary.cs" />
     <Compile Include="Helper\StaticInfo\Types.cs" />
     <Compile Include="Initialize.cs" />
+    <Compile Include="LocalDataBase\ScaleInfo.cs" />
     <Compile Include="LocalDataBase\DataInfo.cs" />
     <Compile Include="LocalDataBase\Errors.cs" />
     <Compile Include="LocalDataBase\Settings.cs" />

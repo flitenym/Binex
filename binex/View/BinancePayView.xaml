@@ -40,13 +40,13 @@
             ScrollViewer.CanContentScroll="True"
             ScrollViewer.HorizontalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
-            bhv:DataGridBehavior.ScrollCommand="{Binding ScrollItemCommand}"
             SelectionUnit="FullRow"
             ItemsSource="{Binding PayInfoCollection}" 
             AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTC" Binding="{Binding AgentEarnBtc}" IsReadOnly="true" />
+                <DataGridTextColumn Header="USDT" Binding="{Binding AgentEarnUSDT}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTS кошелек" Binding="{Binding BTS}" IsReadOnly="true" />
                 <DataGridTemplateColumn Header="Использовать в оплате" Width="175">
                     <DataGridTemplateColumn.CellTemplate>
@@ -63,23 +63,32 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.Row="0"
+                Margin="2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                materialDesign:HintAssist.Hint="Средний курс BTC/USDT"
+                Text="{Binding StringFormat=N4, Path=UsdtCurrencyByBTC, UpdateSourceTrigger=PropertyChanged}"
+                TextWrapping="Wrap"/>
             <Button
-                    Grid.Column="0"
-                    Width="200"
-                    Margin="5"
-                    Command="{Binding UpdateDataCommand}"
-                    Content="Обновить данные"
-                    Foreground="{DynamicResource PreWindowButtonForeground}"
-                    Style="{DynamicResource MaterialDesignRaisedButton}" />
+                Grid.Column="1"
+                Width="200"
+                Margin="5"
+                Command="{Binding UpdateDataCommand}"
+                Content="Обновить данные"
+                Foreground="{DynamicResource PreWindowButtonForeground}"
+                Style="{DynamicResource MaterialDesignRaisedButton}" />
             <Button
-                    Grid.Column="1"
-                    Width="200"
-                    Margin="5"
-                    Command="{Binding BinancePayCommand}"
-                    Content="Оплатить"
-                    Foreground="{DynamicResource PreWindowButtonForeground}"
-                    Style="{DynamicResource MaterialDesignRaisedButton}" />
+                Grid.Column="2"
+                Width="200"
+                Margin="5"
+                Command="{Binding BinancePayCommand}"
+                Content="Оплатить"
+                Foreground="{DynamicResource PreWindowButtonForeground}"
+                Style="{DynamicResource MaterialDesignRaisedButton}" />
         </Grid>
     </Grid>
 </UserControl>

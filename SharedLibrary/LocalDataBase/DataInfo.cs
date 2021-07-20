@@ -1,8 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using SharedLibrary.AbstractClasses;
 using SharedLibrary.Helper.Attributes;
-using SharedLibrary.Helper.StaticInfo;
 
 namespace SharedLibrary.LocalDataBase.Models
 {

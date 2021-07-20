@@ -82,6 +82,8 @@ namespace binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiSecretBinanceKey,
                     apiSecret);
+
+            await HelperMethods.Message("Данные сохранены");
         }
 
         #endregion
