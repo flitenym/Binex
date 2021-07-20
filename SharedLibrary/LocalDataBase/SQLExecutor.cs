@@ -55,6 +55,26 @@ namespace SharedLibrary.LocalDataBase
             });
         }
 
+        public static async Task<List<T>> SelectExecutorAsync<T>(string query)
+        {
+            return await Task.Run(async () =>
+            {
+                try
+                {
+                    using (var slc = new SQLiteConnection(LoadConnectionString))
+                    {
+                        await slc.OpenAsync();
+                        return (await slc.QueryAsync<T>(query)).ToList();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await HelperMethods.Message(ex.ToString());
+                    return new List<T>();
+                }
+            });
+        }
+
         public static async Task DeleteExecutor(string tableName, List<int> IDs)
         {
             await Task.Run(async () =>

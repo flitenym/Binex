@@ -5,6 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:bhv="clr-namespace:SharedLibrary.Behavior;assembly=SharedLibrary"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -13,13 +15,71 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Textblock.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
             <RowDefinition Height="50" />
-            <RowDefinition Height="5*" />
         </Grid.RowDefinitions>
+        <DataGrid 
+            Grid.Row="0" 
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="{x:Null}"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            CanUserSortColumns="True"
+            ColumnWidth="*"
+            EnableColumnVirtualization="False"
+            EnableRowVirtualization="False"
+            Foreground="{DynamicResource WindowForeground}"
+            GridLinesVisibility="None"
+            ScrollViewer.CanContentScroll="True"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            bhv:DataGridBehavior.ScrollCommand="{Binding ScrollItemCommand}"
+            SelectionUnit="FullRow"
+            ItemsSource="{Binding PayInfoCollection}" 
+            AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
+                <DataGridTextColumn Header="BTC" Binding="{Binding AgentEarnBtc}" IsReadOnly="true" />
+                <DataGridTextColumn Header="BTS кошелек" Binding="{Binding BTS}" IsReadOnly="true" />
+                <DataGridTemplateColumn Header="Использовать в оплате" Width="175">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox HorizontalAlignment="Center" Command="{Binding DataContext.CheckCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                                      IsChecked="{Binding Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="{DynamicResource WindowForeground}"  >
+                            </CheckBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button
+                    Grid.Column="0"
+                    Width="200"
+                    Margin="5"
+                    Command="{Binding UpdateDataCommand}"
+                    Content="Обновить данные"
+                    Foreground="{DynamicResource PreWindowButtonForeground}"
+                    Style="{DynamicResource MaterialDesignRaisedButton}" />
+            <Button
+                    Grid.Column="1"
+                    Width="200"
+                    Margin="5"
+                    Command="{Binding BinancePayCommand}"
+                    Content="Оплатить"
+                    Foreground="{DynamicResource PreWindowButtonForeground}"
+                    Style="{DynamicResource MaterialDesignRaisedButton}" />
+        </Grid>
     </Grid>
 </UserControl>
