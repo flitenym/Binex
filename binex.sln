@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "binex", "binex\binex.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary", "SharedLibrary\SharedLibrary.csproj", "{ED428113-DBFC-433D-8932-B0FC1B3CF230}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseGenerator", "LicenseGenerator\LicenseGenerator.csproj", "{EF46F018-8529-4F74-A69E-80D970DD88F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{ED428113-DBFC-433D-8932-B0FC1B3CF230}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED428113-DBFC-433D-8932-B0FC1B3CF230}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED428113-DBFC-433D-8932-B0FC1B3CF230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF46F018-8529-4F74-A69E-80D970DD88F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF46F018-8529-4F74-A69E-80D970DD88F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF46F018-8529-4F74-A69E-80D970DD88F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF46F018-8529-4F74-A69E-80D970DD88F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
