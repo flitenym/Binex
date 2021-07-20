@@ -4,7 +4,7 @@ using SharedLibrary.AbstractClasses;
 using SharedLibrary.Helper.Attributes;
 using SharedLibrary.Helper.StaticInfo;
 
-namespace binex.LocalDataBase.Models
+namespace SharedLibrary.LocalDataBase.Models
 {
     [ModelClass(TableTitle = "Данные", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true)]
     public class DataInfo : ModelClass
@@ -26,9 +26,6 @@ namespace binex.LocalDataBase.Models
 
         [Description("Дата приглашения")]
         public string InviteTime { get; set; }
-
-        [Description("BTS кошелек")]
-        public string BTS { get; set; }
 
         [ColumnData(IsReadOnly = true, DefaultValue = "", IsNullable = false)]
         [Description("Время загрузки")]

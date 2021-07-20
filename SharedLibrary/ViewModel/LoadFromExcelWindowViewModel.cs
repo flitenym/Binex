@@ -3,10 +3,13 @@ using SharedLibrary.AbstractClasses;
 using SharedLibrary.Commands;
 using SharedLibrary.Helper;
 using SharedLibrary.LocalDataBase;
+using SharedLibrary.LocalDataBase.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -124,6 +127,32 @@ $@"При загрузке из Excel следует придерживатьс�
                 }
                 if (listObj.Count > 0)
                 {
+                    // в случае если у нас таблица Данные, то нам нужно проверить BTC
+                    // если BTC у нас по новым данным для загрузки
+                    if (modelClassItem is DataInfo)
+                    {
+                        // загрузим из локальной БД предыдущие данные
+                        var dataInfos = await SQLExecutor.SelectExecutorAsync<DataInfo>(nameof(DataInfo), "WHERE LoadingDateTime = (SELECT di.LoadingDateTime FROM DataInfo di ORDER BY di.LoadingDateTime DESC LIMIT 1)");
+                        if (dataInfos.Any())
+                        {
+                            for (int i = 0; i < listObj.Count; i++)
+                            {
+
+                                var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
+                                var objAgentEarnBtc = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
+                                if (objAgentEarnBtc != null && decimal.TryParse(objAgentEarnBtc.Replace('.', ','), out var objAgentEarnBtcDecimal))
+                                {
+                                    var objLikeInDataInfo = dataInfos.FirstOrDefault(x => x.UserID == objUserID && x.AgentEarnBtc > objAgentEarnBtcDecimal);
+                                    if (objLikeInDataInfo != null)
+                                    {
+                                        await HelperMethods.Message($"Данные не загружены. UserID {objUserID} было {objLikeInDataInfo.AgentEarnBtc} стало {objAgentEarnBtcDecimal}");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     await HelperMethods.Message($"Найдено {listObj.Count} строк, выполняется загрузка в БД");
                     for (int i = 0; i < listObj.Count; i++)
                     {

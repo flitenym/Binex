@@ -236,7 +236,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LocalDataBase\DataInfo.cs" />
     <Compile Include="Model\BinanceModel.cs" />
     <Compile Include="ViewModel\BinanceViewModel.cs" />
     <Compile Include="ViewModel\BinancePayViewModel.cs" />
