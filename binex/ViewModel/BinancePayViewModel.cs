@@ -5,6 +5,7 @@ using SharedLibrary.Commands;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.LocalDataBase;
+using SharedLibrary.LocalDataBase.Models;
 using SharedLibrary.Provider;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,9 @@ namespace binex.ViewModel
         public string UserID { get; set; }
         public decimal AgentEarnBtc { get; set; }
         public decimal? AgentEarnUSDT { get; set; }
+        public decimal? UsdtToPay { get; set; }
         public string BTS { get; set; }
+        public string IsUnique { get; set; }
         public bool IsSelected { get; set; }
         public PayInfo ShallowCopy()
         {
@@ -135,9 +138,20 @@ namespace binex.ViewModel
 
         public async Task GetPayInfoData()
         {
+            var scaleInfo = await SQLExecutor.SelectExecutorAsync<ScaleInfo>(nameof(ScaleInfo), "order by FromValue desc");
+
+            double binancePercent;
+
+            if (!(SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue &&
+                double.TryParse(binancePercentValue.Replace('.', ','), out binancePercent)))
+            {
+                await HelperMethods.Message("Не задан процент по умолчанию в настройках");
+                return;
+            }
+
             var paysInfo = await SQLExecutor.SelectExecutorAsync<PayInfo>(@"
 WITH VarTable AS (
-	SELECT di.ID, di.UserID, di.AgentEarnBtc, ui.BTS, True as IsSelected FROM DataInfo di
+	SELECT di.ID, di.UserID, di.AgentEarnBtc, ui.BTS, ui.IsUnique, True as IsSelected FROM DataInfo di
 	LEFT JOIN UserInfo ui ON ui.UserID = di.UserID
 	WHERE LoadingDateTime IN (SELECT LoadingDateTime FROM DataInfo GROUP BY LoadingDateTime LIMIT 2) 
 )
@@ -147,7 +161,6 @@ WHERE UserID in
 (
 select UserID from VarTable
 GROUP BY UserID
-HAVING(count(UserID) > 1)
 )
 ");
             List<PayInfo> resultPayInfo = new List<PayInfo>();
@@ -158,8 +171,15 @@ HAVING(count(UserID) > 1)
                 {
                     var allUserInfo = paysInfo.Where(x => x.UserID == payInfo.UserID);
                     var payInfoData = payInfo.ShallowCopy();
-                    payInfoData.AgentEarnBtc = Math.Abs(allUserInfo.First().AgentEarnBtc - allUserInfo.Last().AgentEarnBtc);
-                    payInfoData.AgentEarnUSDT = Math.Round(payInfoData.AgentEarnBtc * UsdtCurrencyByBTC, 2);
+                    var first = allUserInfo.First();
+                    var lastBtc = allUserInfo.LastOrDefault(x => x.ID != first.ID)?.AgentEarnBtc ?? 0;
+                    payInfoData.AgentEarnBtc = Math.Abs(allUserInfo.First().AgentEarnBtc - lastBtc);
+                    payInfoData.AgentEarnUSDT = payInfoData.AgentEarnBtc * UsdtCurrencyByBTC;
+                    var hungPercent = (double)payInfoData.AgentEarnUSDT.Value / binancePercent * 100;
+                    var percent = string.IsNullOrEmpty(payInfo.IsUnique?.Trim()) ? (scaleInfo.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? 20) / 100 : binancePercent / 100;
+
+                    payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
+
                     resultPayInfo.Add(payInfoData);
                 }
             }

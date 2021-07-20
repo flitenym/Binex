@@ -46,7 +46,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTC" Binding="{Binding AgentEarnBtc}" IsReadOnly="true" />
-                <DataGridTextColumn Header="USDT" Binding="{Binding AgentEarnUSDT}" IsReadOnly="true" />
+                <DataGridTextColumn Header="BTC/USDT" Binding="{Binding StringFormat=N2, Path=AgentEarnUSDT}" IsReadOnly="true" />
+                <DataGridTextColumn Header="USDT" Binding="{Binding StringFormat=N4, Path=UsdtToPay}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTS кошелек" Binding="{Binding BTS}" IsReadOnly="true" />
                 <DataGridTemplateColumn Header="Использовать в оплате" Width="175">
                     <DataGridTemplateColumn.CellTemplate>

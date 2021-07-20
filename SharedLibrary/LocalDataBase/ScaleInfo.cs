@@ -13,9 +13,6 @@ namespace SharedLibrary.LocalDataBase.Models
         [Description("От")]
         public double FromValue { get; set; }
 
-        [Description("До")]
-        public double ToValue { get; set; }
-
         [Description("Коммисия (%)")]
         public double Percent { get; set; }
     }

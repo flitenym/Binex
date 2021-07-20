@@ -28,6 +28,11 @@ namespace binex.ViewModel
             {
                 ApiSecret = apiSecretValue;
             }
+
+            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue)
+            {
+                BinancePercent = binancePercentValue;
+            }
         }
 
         #region Fields
@@ -62,6 +67,21 @@ namespace binex.ViewModel
 
         #endregion
 
+        #region BinancePercent
+
+        private string binancePercent = string.Empty;
+        public string BinancePercent
+        {
+            get { return binancePercent; }
+            set
+            {
+                binancePercent = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(BinancePercent)));
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Команда для сохранения данных
@@ -74,6 +94,7 @@ namespace binex.ViewModel
         {
             await HelperMethods.UpdateByKeyInDB(InfoKeys.ApiKeyBinanceKey, apiKey);
             await HelperMethods.UpdateByKeyInDB(InfoKeys.ApiSecretBinanceKey, apiSecret);
+            await HelperMethods.UpdateByKeyInDB(InfoKeys.BinancePercentKey, binancePercent);
 
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiKeyBinanceKey,
@@ -82,6 +103,10 @@ namespace binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiSecretBinanceKey,
                     apiSecret);
+
+            SharedProvider.SetToSingleton(
+                    InfoKeys.BinancePercentKey,
+                    binancePercent);
 
             await HelperMethods.Message("Данные сохранены");
         }

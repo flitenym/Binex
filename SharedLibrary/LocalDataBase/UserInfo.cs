@@ -17,5 +17,8 @@ namespace SharedLibrary.LocalDataBase.Models
 
         [Description("BTS кошелек")]
         public string BTS { get; set; }
+
+        [Description("Уникальный")]
+        public string IsUnique { get; set; }
     }
 }

@@ -57,6 +57,9 @@ namespace SharedLibrary
                 var apiSecret = await HelperMethods.GetByKeyInDB(InfoKeys.ApiSecretBinanceKey);
                 SharedProvider.SetToSingleton(InfoKeys.ApiSecretBinanceKey, apiSecret?.Value);
 
+                var binancePercent = await HelperMethods.GetByKeyInDB(InfoKeys.BinancePercentKey);
+                SharedProvider.SetToSingleton(InfoKeys.BinancePercentKey, binancePercent?.Value);
+
                 var mainWindow = new MainWindowView();
 
                 mainWindow.DataContext = vm;
