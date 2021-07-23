@@ -1,8 +1,0 @@
-{
-  "runtimeOptions": {
-    "additionalProbingPaths": [
-      "C:\\Users\\adolmatkin\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\adolmatkin\\.nuget\\packages"
-    ]
-  }
-}
