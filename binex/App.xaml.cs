@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using SharedLibrary;
 
-namespace binex
+namespace Binex
 {
     /// <summary>
     /// Логика взаимодействия для App.xaml

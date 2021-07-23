@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace binex.ViewModel
+namespace Binex.ViewModel
 {
     public class BinanceViewModel : INotifyPropertyChanged
     {

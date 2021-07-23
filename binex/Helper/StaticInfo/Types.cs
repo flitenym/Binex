@@ -2,7 +2,7 @@
 using System;
 using static SharedLibrary.Helper.StaticInfo.Enums;
 
-namespace binex.Helper.StaticInfo
+namespace Binex.Helper.StaticInfo
 {
     public static class Types
     {

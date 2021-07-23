@@ -69,10 +69,10 @@ namespace SharedLibrary
             Application.Current.MainWindow = splashScreen;
             splashScreen.Show();
 
-            if (!LicenseVerify())
-            {
-                return;
-            }
+            //if (!LicenseVerify())
+            //{
+            //    return;
+            //}
 
             Application.Current.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 

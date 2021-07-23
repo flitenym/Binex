@@ -14,7 +14,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace binex.ViewModel
+namespace Binex.ViewModel
 {
     public class PayInfo
     {

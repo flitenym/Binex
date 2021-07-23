@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Windows.Controls;
 using SharedLibrary.AbstractClasses;
-using binex.Helper.StaticInfo;
-using binex.View;
-using binex.ViewModel;
+using Binex.Helper.StaticInfo;
+using Binex.View;
+using Binex.ViewModel;
 using static SharedLibrary.Helper.StaticInfo.Enums;
 
-namespace binex.Model
+namespace Binex.Model
 {
     class BinanceModel : ModuleBase
     {

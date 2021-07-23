@@ -3,7 +3,7 @@ using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace binex.View
+namespace Binex.View
 {
     /// <summary>
     /// Логика взаимодействия для TestView.xaml
