@@ -1,5 +1,7 @@
 ﻿using Binance.Net;
 using Binance.Net.Objects.Spot;
+using Binance.Net.Objects.Spot.SpotData;
+using Binex.Api;
 using CryptoExchange.Net.Authentication;
 using SharedLibrary.Commands;
 using SharedLibrary.Helper;
@@ -38,7 +40,7 @@ namespace Binex.ViewModel
 
         public BinancePayViewModel()
         {
-            Task.Factory.StartNew(async () => await GetMainInfo());
+            Task.Factory.StartNew(async () => await GetMainInfoAsync());
         }
 
         #region Fields
@@ -77,51 +79,30 @@ namespace Binex.ViewModel
 
         #endregion
 
-        private async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiData()
-        {
-            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiKeyBinanceKey) is string apiKeyValue &&
-                SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiSecretBinanceKey) is string apiSecretValue)
-            {
-                return (true, apiKeyValue, apiSecretValue);
-            }
 
-            await HelperMethods.Message("Не удалось получить данные Api, проверьте настройки");
-            return (false, null, null);
-        }
 
         #region Вычисление валюты
 
-        public async Task<bool> GetCurrency()
+        public async Task<bool> GetCurrencyAsync()
         {
             try
             {
-                var apiData = await GetApiData();
-
-                if (!apiData.IsSuccess)
-                {
-                    return false;
-                }
-
-                var options = new BinanceClientOptions()
-                {
-                    ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                    AutoTimestamp = false
-                };
-
-                var client = new BinanceClient(options);
-
                 DateTime endDate = new DateTime(DateTime.UtcNow.Date.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day, 0, 0, 0);
                 DateTime startDate = endDate.AddDays(-6);
 
-                var data = await client.Spot.Market.GetKlinesAsync("BTCUSDT", Binance.Net.Enums.KlineInterval.OneDay, startDate, endDate);
+                (bool IsSuccess, decimal? Average) = await BinanceApi.GetAverageBetweenCurreniesAsync(
+                    "BTC",
+                    "USDT",
+                    Binance.Net.Enums.KlineInterval.OneDay,
+                    startDate,
+                    endDate);
 
-                if (!data.Success)
+                if (!IsSuccess)
                 {
-                    await HelperMethods.Message("Не удалось получить данные по валюте");
                     return false;
                 }
 
-                UsdtCurrencyByBTC = data.Data.Average(x => x.Open);
+                UsdtCurrencyByBTC = Average.Value;
 
                 return true;
             }
@@ -136,7 +117,7 @@ namespace Binex.ViewModel
 
         #region Вычисление данные в таблице
 
-        public async Task GetPayInfoData()
+        public async Task GetPayInfoDataAsync()
         {
             var scaleInfo = await SQLExecutor.SelectExecutorAsync<ScaleInfo>(nameof(ScaleInfo), "order by FromValue desc");
 
@@ -205,10 +186,10 @@ GROUP BY UserID
 
         #region Получение основной информации для оплаты
 
-        public async Task<bool> GetMainInfo()
+        public async Task<bool> GetMainInfoAsync()
         {
-            if (!await GetCurrency()) return false;
-            await GetPayInfoData();
+            if (!await GetCurrencyAsync()) return false;
+            await GetPayInfoDataAsync();
             return true;
         }
 
@@ -218,11 +199,11 @@ GROUP BY UserID
 
         private AsyncCommand updateDataCommand;
 
-        public AsyncCommand UpdateDataCommand => updateDataCommand ?? (updateDataCommand = new AsyncCommand(x => UpdateData()));
+        public AsyncCommand UpdateDataCommand => updateDataCommand ?? (updateDataCommand = new AsyncCommand(x => UpdateDataAsync()));
 
-        private async Task UpdateData()
+        private async Task UpdateDataAsync()
         {
-            if (await GetMainInfo())
+            if (await GetMainInfoAsync())
             {
                 await HelperMethods.Message("Данные обновлены");
             }
@@ -234,35 +215,16 @@ GROUP BY UserID
 
         private AsyncCommand binancePayCommand;
 
-        public AsyncCommand BinancePayCommand => binancePayCommand ?? (binancePayCommand = new AsyncCommand(x => BinancePay()));
+        public AsyncCommand BinancePayCommand => binancePayCommand ?? (binancePayCommand = new AsyncCommand(x => BinancePayAsync()));
 
-        private async Task BinancePay()
+        private async Task BinancePayAsync()
         {
-            var apiData = await GetApiData();
+            (bool isSuccess, List<BinanceBalance> Currenies) = await BinanceApi.GetAllCurrenciesAsync();
 
-            if (!apiData.IsSuccess)
+            if (!isSuccess)
             {
                 return;
             }
-
-            //var order = new BinanceWithdrawalPlaced()
-            //{
-            //    Success = true,
-            //    Message = "Test"
-            //};
-
-            //var options = new BinanceClientOptions()
-            //{
-            //    ApiCredentials = new ApiCredentials(ApiKey, ApiSecret),
-            //    AutoTimestamp = false
-            //};
-
-            //var client = new BinanceClient(options);
-            //decimal amount = 9.6E-6m;
-            //var result = client.WithdrawDeposit.Withdraw("BTC", Address, amount, network: "BSC");
-
-            await HelperMethods.Message("Оплата совершена");
-            await HelperMethods.Message("Оплата совершена");
         }
 
         #endregion

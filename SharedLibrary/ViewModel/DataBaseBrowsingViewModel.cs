@@ -329,7 +329,7 @@ namespace SharedLibrary.ViewModel
                     loadFromExcelWindow.DataContext = vm;
                     if (loadFromExcelWindow.ShowDialog() == true)
                     {
-                        Task.Factory.StartNew(async () => await Select());
+                        Task.Factory.StartNew(async () => await SelectAsync());
                     }
                 }
                 catch (Exception ex)
@@ -351,7 +351,7 @@ namespace SharedLibrary.ViewModel
 
         private AsyncCommand refreshCommand;
 
-        public AsyncCommand RefreshCommand => refreshCommand ?? (refreshCommand = new AsyncCommand(x => Select(), (o) => CanRefresh()));
+        public AsyncCommand RefreshCommand => refreshCommand ?? (refreshCommand = new AsyncCommand(x => SelectAsync(), (o) => CanRefresh()));
 
         private bool CanRefresh()
         {
@@ -359,7 +359,7 @@ namespace SharedLibrary.ViewModel
             return true;
         }
 
-        private async Task Select()
+        private async Task SelectAsync()
         {
             if (SelectedModelType == null || SelectedModelName == null)
             {
@@ -380,7 +380,7 @@ namespace SharedLibrary.ViewModel
 
         private AsyncCommand deleteRowCommand;
 
-        public AsyncCommand DeleteRowCommand => deleteRowCommand ?? (deleteRowCommand = new AsyncCommand(obj => DeleteRows(obj), x => CanDelete()));
+        public AsyncCommand DeleteRowCommand => deleteRowCommand ?? (deleteRowCommand = new AsyncCommand(obj => DeleteRowsAsync(obj), x => CanDelete()));
 
         private bool CanDelete()
         {
@@ -388,7 +388,7 @@ namespace SharedLibrary.ViewModel
             return SelectedModel.GetCanDelete();
         }
 
-        public async Task DeleteRows(object obj)
+        public async Task DeleteRowsAsync(object obj)
         {
             List<DataRowView> selectedItems = new List<DataRowView>();
 
@@ -422,7 +422,7 @@ namespace SharedLibrary.ViewModel
 
             IDs.RemoveAll(x => x == -1);
 
-            await SQLExecutor.DeleteExecutor(SelectedModelName, IDs);
+            await SQLExecutor.DeleteExecutorAsync(SelectedModelName, IDs);
 
 
             foreach (var selectedItem in selectedItems)
@@ -438,7 +438,7 @@ namespace SharedLibrary.ViewModel
         #region Команда для добавления новой строки
 
         private AsyncCommand insertRowCommand;
-        public AsyncCommand InsertRowCommand => insertRowCommand ?? (insertRowCommand = new AsyncCommand(x => InsertRows(), y => CanInsert()));
+        public AsyncCommand InsertRowCommand => insertRowCommand ?? (insertRowCommand = new AsyncCommand(x => InsertRowsAsync(), y => CanInsert()));
 
         private bool CanInsert()
         {
@@ -446,7 +446,7 @@ namespace SharedLibrary.ViewModel
             return SelectedModel.GetCanInsert();
         }
 
-        public async Task InsertRows()
+        public async Task InsertRowsAsync()
         {
             var changes = TableData.GetChanges();
 

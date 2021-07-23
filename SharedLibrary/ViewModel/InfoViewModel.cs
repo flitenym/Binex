@@ -61,9 +61,9 @@ namespace SharedLibrary.ViewModel
         }
 
         private AsyncCommand insertStackTraceCommand;
-        public AsyncCommand InsertStackTraceCommand => insertStackTraceCommand ?? (insertStackTraceCommand = new AsyncCommand(x => InsertStackTrace(x as string)));
+        public AsyncCommand InsertStackTraceCommand => insertStackTraceCommand ?? (insertStackTraceCommand = new AsyncCommand(x => InsertStackTraceAsync(x as string)));
 
-        public async Task InsertStackTrace(string str)
+        public async Task InsertStackTraceAsync(string str)
         {
             var newStackTrace = new Errors() { Date = DateTime.Now, StackTrace = str };
             await SQLExecutor.InsertExecutorAsync(newStackTrace, newStackTrace);
@@ -72,9 +72,9 @@ namespace SharedLibrary.ViewModel
         }
 
         private AsyncCommand selectStackTraceCommand;
-        public AsyncCommand SelectStackTraceCommand => selectStackTraceCommand ?? (selectStackTraceCommand = new AsyncCommand(x => SelectStackTrace()));
+        public AsyncCommand SelectStackTraceCommand => selectStackTraceCommand ?? (selectStackTraceCommand = new AsyncCommand(x => SelectStackTraceAsync()));
 
-        public async Task SelectStackTrace()
+        public async Task SelectStackTraceAsync()
         {
             var DBstackRaces = (await SQLExecutor.SelectExecutorAsync<Errors>(nameof(Errors), "order by Date desc LIMIT 10"));
             StackTraces = new ObservableCollection<Errors>(DBstackRaces);
@@ -83,11 +83,11 @@ namespace SharedLibrary.ViewModel
         }
 
         private AsyncCommand deleteStackTraceCommand;
-        public AsyncCommand DeleteStackTraceCommand => deleteStackTraceCommand ?? (deleteStackTraceCommand = new AsyncCommand(x => DeleteStackTrace()));
+        public AsyncCommand DeleteStackTraceCommand => deleteStackTraceCommand ?? (deleteStackTraceCommand = new AsyncCommand(x => DeleteStackTraceAsync()));
 
-        public async Task DeleteStackTrace()
+        public async Task DeleteStackTraceAsync()
         {
-            await SQLExecutor.DeleteExecutor(nameof(Errors), "where (julianday('now','localtime') - julianday(Date))>=7");
+            await SQLExecutor.DeleteExecutorAsync(nameof(Errors), "where (julianday('now','localtime') - julianday(Date))>=7");
 
             SelectStackTraceCommand.Execute(null);
         }

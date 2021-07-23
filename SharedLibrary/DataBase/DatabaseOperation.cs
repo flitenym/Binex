@@ -27,7 +27,7 @@ namespace SharedLibrary.DataBase
                     var connectionStringData = (await slc.QueryAsync<Settings>($"SELECT * FROM {nameof(Settings)} Where Name = '{InfoKeys.ConnectionStringKey}'")).FirstOrDefault();
                     if (connectionStringData != null && !string.IsNullOrEmpty(connectionStringData.Value))
                     {
-                        await TryConnection(connectionStringData.Value, connectionStringData);
+                        await TryConnectionAsync(connectionStringData.Value, connectionStringData);
                         if (canGetData)
                         {
                             connectionString = connectionStringData.Value;
@@ -39,7 +39,7 @@ namespace SharedLibrary.DataBase
             return connectionString;
         }
 
-        public static async Task TryConnection(string ConnectionString, Settings connectionStringData = null)
+        public static async Task TryConnectionAsync(string ConnectionString, Settings connectionStringData = null)
         {
             try
             {
@@ -52,7 +52,7 @@ namespace SharedLibrary.DataBase
                     canGetData = true;
                     await Message("ConnectionString верный");
 
-                    await HelperMethods.UpdateByKeyInDB(InfoKeys.ConnectionStringKey, connectionString);
+                    await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ConnectionStringKey, connectionString);
                 }
             }
             catch (Exception ex)

@@ -75,7 +75,7 @@ namespace SharedLibrary.LocalDataBase
             });
         }
 
-        public static async Task DeleteExecutor(string tableName, List<int> IDs)
+        public static async Task DeleteExecutorAsync(string tableName, List<int> IDs)
         {
             await Task.Run(async () =>
             {
@@ -94,7 +94,7 @@ namespace SharedLibrary.LocalDataBase
             });
         }
 
-        public static async Task DeleteExecutor(string tableName, string param)
+        public static async Task DeleteExecutorAsync(string tableName, string param)
         {
             await Task.Run(async () =>
             {
@@ -113,7 +113,7 @@ namespace SharedLibrary.LocalDataBase
             });
         }
 
-        public static async Task DeleteExecutor(string tableName)
+        public static async Task DeleteExecutorAsync(string tableName)
         {
             await Task.Run(async () =>
             {

@@ -317,7 +317,7 @@ namespace SharedLibrary.Helper
             return assembly.GetName().Version.ToString();
         }
 
-        public static async Task UpdateByKeyInDB(string key, string value, Settings settingsData = null)
+        public static async Task UpdateByKeyInDBAsync(string key, string value, Settings settingsData = null)
         {
             if (settingsData == null)
             {
@@ -341,7 +341,7 @@ namespace SharedLibrary.Helper
             }
         }
 
-        public static async Task<Settings> GetByKeyInDB(string key)
+        public static async Task<Settings> GetByKeyInDBAsync(string key)
         {
             using (var slc = new SQLiteConnection(SQLExecutor.LoadConnectionString))
             {

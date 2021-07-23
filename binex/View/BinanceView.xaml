@@ -23,6 +23,7 @@
             <RowDefinition Height="50" />
             <RowDefinition Height="50" />
             <RowDefinition Height="50" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="5*" />
         </Grid.RowDefinitions>
         <TextBox
@@ -48,6 +49,16 @@
         <TextBox
             Grid.Row="2"
             Margin="2"
+            materialDesign:HintAssist.Hint="Api Address"
+            AcceptsReturn="True"
+            HorizontalScrollBarVisibility="Auto"
+            Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+            Text="{Binding ApiAddress, UpdateSourceTrigger=PropertyChanged}"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto" />
+        <TextBox
+            Grid.Row="3"
+            Margin="2"
             materialDesign:HintAssist.Hint="Binance процент (%)"
             AcceptsReturn="True"
             HorizontalScrollBarVisibility="Auto"
@@ -56,7 +67,7 @@
             TextWrapping="Wrap"
             VerticalScrollBarVisibility="Auto" />
         <Button
-            Grid.Row="3"
+            Grid.Row="4"
             Margin="5"
             HorizontalAlignment="Right"
             Command="{Binding SaveCommand}"

@@ -24,6 +24,8 @@
 
         public static string ApiSecretBinanceKey = "ApiSecret";
 
+        public static string ApiAddressBinanceKey = "ApiAddress";
+
         public static string BinancePercentKey = "BinancePercent";
 
         #endregion

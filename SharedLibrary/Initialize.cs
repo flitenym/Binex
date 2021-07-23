@@ -95,13 +95,16 @@ namespace SharedLibrary
                 var infovm = new InfoViewModel();
                 SharedProvider.SetToSingleton(nameof(InfoViewModel), infovm);
 
-                var apiKey = await HelperMethods.GetByKeyInDB(InfoKeys.ApiKeyBinanceKey);
+                var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
                 SharedProvider.SetToSingleton(InfoKeys.ApiKeyBinanceKey, apiKey?.Value);
 
-                var apiSecret = await HelperMethods.GetByKeyInDB(InfoKeys.ApiSecretBinanceKey);
+                var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
                 SharedProvider.SetToSingleton(InfoKeys.ApiSecretBinanceKey, apiSecret?.Value);
 
-                var binancePercent = await HelperMethods.GetByKeyInDB(InfoKeys.BinancePercentKey);
+                var apiAddress = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiAddressBinanceKey);
+                SharedProvider.SetToSingleton(InfoKeys.ApiAddressBinanceKey, apiAddress?.Value);
+
+                var binancePercent = await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinancePercentKey);
                 SharedProvider.SetToSingleton(InfoKeys.BinancePercentKey, binancePercent?.Value);
 
                 var mainWindow = new MainWindowView();

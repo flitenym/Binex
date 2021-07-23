@@ -208,7 +208,7 @@ namespace SharedLibrary.ViewModel
         #region Команда для проверки подключения к БД
 
         private AsyncCommand checkConnectionCommand;
-        public AsyncCommand CheckConnectionCommand => checkConnectionCommand ?? (checkConnectionCommand = new AsyncCommand(x => DatabaseOperation.TryConnection(ConnectionString)));
+        public AsyncCommand CheckConnectionCommand => checkConnectionCommand ?? (checkConnectionCommand = new AsyncCommand(x => DatabaseOperation.TryConnectionAsync(ConnectionString)));
 
         #endregion
 

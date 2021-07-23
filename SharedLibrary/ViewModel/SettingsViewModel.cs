@@ -31,7 +31,7 @@ namespace SharedLibrary.ViewModel
 
         private AsyncCommand themeAcceptor;
 
-        public AsyncCommand ThemeAcceptor => themeAcceptor ?? (themeAcceptor = new AsyncCommand(obj => SelectTheme(obj, false)));
+        public AsyncCommand ThemeAcceptor => themeAcceptor ?? (themeAcceptor = new AsyncCommand(obj => SelectThemeAsync(obj, false)));
 
         #endregion
 
@@ -39,13 +39,13 @@ namespace SharedLibrary.ViewModel
 
         private AsyncCommand globalThemeAcceptor;
 
-        public AsyncCommand GlobalThemeAcceptor => globalThemeAcceptor ?? (globalThemeAcceptor = new AsyncCommand(obj => SelectTheme(obj, true)));
+        public AsyncCommand GlobalThemeAcceptor => globalThemeAcceptor ?? (globalThemeAcceptor = new AsyncCommand(obj => SelectThemeAsync(obj, true)));
 
         #endregion 
 
         #region Shared Methods
 
-        public async Task SelectTheme(object obj, bool isGlobal)
+        public async Task SelectThemeAsync(object obj, bool isGlobal)
         {
             if (obj != null && obj is string ThemeName)
             {
@@ -362,7 +362,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
         /// <summary>
         /// Обновление по локальному пути
         /// </summary>
-        private async Task UpdateProgramCommand()
+        private async Task UpdateProgramCommandAsync()
         {
             try
             {
@@ -409,7 +409,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
 
                 TempFolderWithFilePath = fileStream.Name;
                 CheckFolder(TempFolderPath);
-                await UpdateProgramCommand();
+                await UpdateProgramCommandAsync();
             }
             else
             {
@@ -498,7 +498,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
             else
             {
                 await Message("Скачивание завершено");
-                await UpdateProgramCommand();
+                await UpdateProgramCommandAsync();
             }
         }
 
@@ -569,8 +569,8 @@ $@"1. Файл должен скачиваться по ссылке из инт
         #region Команда для Drag and Drop
 
         private AsyncCommand previewDropCommand;
-        public AsyncCommand PreviewDropCommand => previewDropCommand ?? (previewDropCommand = new AsyncCommand(obj => DragAndDrop(obj)));
-        public async Task DragAndDrop(object obj)
+        public AsyncCommand PreviewDropCommand => previewDropCommand ?? (previewDropCommand = new AsyncCommand(obj => DragAndDropAsync(obj)));
+        public async Task DragAndDropAsync(object obj)
         {
             var list = (obj as DataObject).GetFileDropList();
             if (list.Count == 0)

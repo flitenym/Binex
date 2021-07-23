@@ -29,6 +29,11 @@ namespace Binex.ViewModel
                 ApiSecret = apiSecretValue;
             }
 
+            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiAddressBinanceKey) is string apiAddressValue)
+            {
+                ApiAddress = apiAddressValue;
+            }
+
             if (SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue)
             {
                 BinancePercent = binancePercentValue;
@@ -67,6 +72,21 @@ namespace Binex.ViewModel
 
         #endregion
 
+        #region ApiAddress
+
+        private string apiAddress = string.Empty;
+        public string ApiAddress
+        {
+            get { return apiAddress; }
+            set
+            {
+                apiAddress = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ApiAddress)));
+            }
+        }
+
+        #endregion
+
         #region BinancePercent
 
         private string binancePercent = string.Empty;
@@ -88,13 +108,14 @@ namespace Binex.ViewModel
 
         private AsyncCommand loadCommand;
 
-        public AsyncCommand SaveCommand => loadCommand ?? (loadCommand = new AsyncCommand(x => Save()));
+        public AsyncCommand SaveCommand => loadCommand ?? (loadCommand = new AsyncCommand(x => SaveAsync()));
 
-        private async Task Save()
+        private async Task SaveAsync()
         {
-            await HelperMethods.UpdateByKeyInDB(InfoKeys.ApiKeyBinanceKey, apiKey);
-            await HelperMethods.UpdateByKeyInDB(InfoKeys.ApiSecretBinanceKey, apiSecret);
-            await HelperMethods.UpdateByKeyInDB(InfoKeys.BinancePercentKey, binancePercent);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey, apiKey);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey, apiSecret);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiAddressBinanceKey, apiAddress);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.BinancePercentKey, binancePercent);
 
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiKeyBinanceKey,
@@ -103,6 +124,10 @@ namespace Binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiSecretBinanceKey,
                     apiSecret);
+
+            SharedProvider.SetToSingleton(
+                    InfoKeys.ApiAddressBinanceKey,
+                    apiAddress);
 
             SharedProvider.SetToSingleton(
                     InfoKeys.BinancePercentKey,
