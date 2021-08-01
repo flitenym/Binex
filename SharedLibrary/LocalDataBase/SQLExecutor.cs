@@ -13,7 +13,19 @@ namespace SharedLibrary.LocalDataBase
 {
     public static class SQLExecutor
     {
-        public static string LoadConnectionString => ConfigurationManager.ConnectionStrings["LocalDataBase"].ConnectionString;
+        private static string loadConnectionString = ConfigurationManager.ConnectionStrings["LocalDataBase"].ConnectionString;
+
+        public static string LoadConnectionString
+        {
+            get
+            {
+                return loadConnectionString;
+            }
+            set
+            {
+                loadConnectionString = value;
+            }
+        }
 
         public static async Task<DataTable> SelectExecutorAsync(Type type, string tableName, string param = default)
         {
