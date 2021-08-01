@@ -186,6 +186,8 @@ $@"При загрузке из Excel следует придерживатьс�
 
         public DataSet GetDataSet()
         {
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
             using (var stream = File.Open(fileName, FileMode.Open, FileAccess.Read))
             {
                 if (Path.GetExtension(fileName) == ".csv")
