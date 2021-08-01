@@ -28,6 +28,14 @@
 
         public static string BinancePercentKey = "BinancePercent";
 
+        public static string BinanceFuturesPercentKey = "BinanceFuturesPercent";
+
+        public static string EmailsKey = "Emails";
+
+        public static string EmailLoginKey = "EmailLogin";
+
+        public static string EmailPasswordKey = "EmailPassword";
+
         #endregion
     }
 }

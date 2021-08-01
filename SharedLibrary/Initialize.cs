@@ -107,6 +107,9 @@ namespace SharedLibrary
                 var binancePercent = await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinancePercentKey);
                 SharedProvider.SetToSingleton(InfoKeys.BinancePercentKey, binancePercent?.Value);
 
+                var binanceFuturesPercent = await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinanceFuturesPercentKey);
+                SharedProvider.SetToSingleton(InfoKeys.BinanceFuturesPercentKey, binanceFuturesPercent?.Value);
+
                 var mainWindow = new MainWindowView();
 
                 mainWindow.DataContext = vm;

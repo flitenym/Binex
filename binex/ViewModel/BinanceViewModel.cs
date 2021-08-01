@@ -38,6 +38,15 @@ namespace Binex.ViewModel
             {
                 BinancePercent = binancePercentValue;
             }
+
+            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.BinanceFuturesPercentKey) is string binanceFuturesPercentValue)
+            {
+                BinanceFuturesPercent = binanceFuturesPercentValue;
+            }
+
+            Task.Factory.StartNew(async () =>
+                await SetEmailsInfoFromDB()
+            );
         }
 
         #region Fields
@@ -102,6 +111,77 @@ namespace Binex.ViewModel
 
         #endregion
 
+        #region BinanceFuturesPercent
+
+        private string binanceFuturesPercent = string.Empty;
+        public string BinanceFuturesPercent
+        {
+            get { return binanceFuturesPercent; }
+            set
+            {
+                binanceFuturesPercent = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(BinanceFuturesPercent)));
+            }
+        }
+
+        #endregion
+
+        #region Emails
+
+        private string emails = string.Empty;
+        public string Emails
+        {
+            get { return emails; }
+            set
+            {
+                emails = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(Emails)));
+            }
+        }
+
+        #endregion
+
+        #region EmailLogin
+
+        private string emailLogin = string.Empty;
+        public string EmailLogin
+        {
+            get { return emailLogin; }
+            set
+            {
+                emailLogin = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(EmailLogin)));
+            }
+        }
+
+        #endregion
+
+        #region EmailPassword
+
+        private string emailPassword = string.Empty;
+        public string EmailPassword
+        {
+            get { return emailPassword; }
+            set
+            {
+                emailPassword = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(EmailPassword)));
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Methods
+
+        private async Task SetEmailsInfoFromDB()
+        {
+            Emails = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailsKey))?.Value;
+            EmailLogin = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailLoginKey))?.Value;
+            EmailPassword = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailPasswordKey))?.Value;
+        }
+
         #endregion
 
         #region Команда для сохранения данных
@@ -116,6 +196,10 @@ namespace Binex.ViewModel
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey, apiSecret);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiAddressBinanceKey, apiAddress);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.BinancePercentKey, binancePercent);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.BinanceFuturesPercentKey, binanceFuturesPercent);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailsKey, emails);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailLoginKey, emailLogin);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailPasswordKey, emailPassword);
 
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiKeyBinanceKey,
@@ -132,6 +216,10 @@ namespace Binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.BinancePercentKey,
                     binancePercent);
+
+            SharedProvider.SetToSingleton(
+                    InfoKeys.BinanceFuturesPercentKey,
+                    binanceFuturesPercent);
 
             await HelperMethods.Message("Данные сохранены");
         }

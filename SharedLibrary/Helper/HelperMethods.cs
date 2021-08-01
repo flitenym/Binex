@@ -6,11 +6,14 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Dapper;
+using NLog;
 using SharedLibrary.AbstractClasses;
 using SharedLibrary.Helper.Attributes;
 using SharedLibrary.Helper.StaticInfo;
@@ -30,20 +33,27 @@ namespace SharedLibrary.Helper
         /// </summary>
         /// <param name="content">Сообщение</param>
         /// <param name="isNoDuplicateConsider">Если true и будет дубликаты сообщений, то они каждый все равно вызовет новое уведомление, если false то выйдет повторное сообщение 1 раз</param>
-        public static Task Message(string content, bool isNoDuplicateConsider = false)
+        public static Task Message(string content, bool isNoDuplicateConsider = false, Logger logger = null)
         {
             return Task.Run(
                 () =>
                 {
-                    if (SharedProvider.GetFromDictionaryByKey(nameof(MainWindowViewModel)) is MainWindowViewModel mainWindowViewModel)
+                    if (logger == null)
                     {
-                        mainWindowViewModel.IsMessagePanelContent.Enqueue(
-                        content,
-                        "OK",
-                        param => Trace.WriteLine("Actioned: " + param),
-                        null,
-                        false,
-                        isNoDuplicateConsider);
+                        if (SharedProvider.GetFromDictionaryByKey(nameof(MainWindowViewModel)) is MainWindowViewModel mainWindowViewModel)
+                        {
+                            mainWindowViewModel.IsMessagePanelContent.Enqueue(
+                            content,
+                            "OK",
+                            param => Trace.WriteLine("Actioned: " + param),
+                            null,
+                            false,
+                            isNoDuplicateConsider);
+                        }
+                    }
+                    else
+                    {
+                        logger.Trace(content);
                     }
                 });
         }
@@ -61,7 +71,8 @@ namespace SharedLibrary.Helper
             var column = table.Columns[e.Column.Header as string];
             e.Column.Header = table.Columns[e.Column.Header as string].Caption;
 
-            if (GetProperty(column, InfoKeys.ExtendedPropertiesShowInTableKey)) {
+            if (GetProperty(column, InfoKeys.ExtendedPropertiesShowInTableKey))
+            {
                 e.Column.Visibility = Visibility.Collapsed;
             }
 
@@ -128,7 +139,7 @@ namespace SharedLibrary.Helper
                         row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
                     }
                 }
-                    
+
                 table.Rows.Add(row);
             }
             return table;
@@ -297,7 +308,7 @@ namespace SharedLibrary.Helper
             AppDomain currentDomain = AppDomain.CurrentDomain;
             Assembly[] assems = currentDomain.GetAssemblies();
 
-            foreach(var assm in assems)
+            foreach (var assm in assems)
             {
                 result.AddRange(
                         assm.GetTypes()
@@ -348,6 +359,28 @@ namespace SharedLibrary.Helper
                 await slc.OpenAsync();
                 return (await slc.QueryAsync<Settings>($"SELECT * FROM {nameof(Settings)} Where Name = '{key}'")).FirstOrDefault();
             }
+        }
+
+        public static void SendEmail(string addressFrom, string addressFromName, string addressFromPassword, string addressTo, string subject, string body, bool enableSsl = true, string smtpHost = "smtp.gmail.com", int smtpPort = 587)
+        {
+            // отправитель - устанавливаем адрес и отображаемое в письме имя
+            MailAddress from = new MailAddress(addressFrom, addressFromName);
+            // кому отправляем
+            MailAddress to = new MailAddress(addressTo);
+            // создаем объект сообщения
+            MailMessage m = new MailMessage(from, to);
+            // тема письма
+            m.Subject = subject;
+            // текст письма
+            m.Body = body;
+            // письмо представляет код html
+            m.IsBodyHtml = true;
+            // адрес smtp-сервера и порт, с которого будем отправлять письмо
+            SmtpClient smtp = new SmtpClient(smtpHost, smtpPort);
+            // логин и пароль
+            smtp.Credentials = new NetworkCredential(addressFrom, addressFromPassword);
+            smtp.EnableSsl = enableSsl;
+            smtp.Send(m);
         }
     }
 }

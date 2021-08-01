@@ -7,6 +7,7 @@ using Binance.Net.Objects.Spot.SpotData;
 using Binance.Net.Objects.Spot.WalletData;
 using Binex.Helper.StaticInfo;
 using CryptoExchange.Net.Authentication;
+using NLog;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.Provider;
@@ -22,30 +23,47 @@ namespace Binex.Api
     public static class BinanceApi
     {
         public const HttpStatusCode SuccessCode = HttpStatusCode.OK;
-        public static async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiDataAsync()
+        public static async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiDataAsync(Logger logger = null)
         {
-            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiKeyBinanceKey) is string apiKeyValue &&
-                SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiSecretBinanceKey) is string apiSecretValue)
+            if (logger == null)
             {
-                return (true, apiKeyValue, apiSecretValue);
-            }
+                if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiKeyBinanceKey) is string apiKeyValue &&
+                SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiSecretBinanceKey) is string apiSecretValue)
+                {
+                    return (true, apiKeyValue, apiSecretValue);
+                }
 
-            await HelperMethods.Message("Не удалось получить данные Api, проверьте настройки");
-            return (false, null, null);
+                await HelperMethods.Message("Не удалось получить данные Api, проверьте настройки", logger: logger);
+                return (false, null, null);
+            }
+            else
+            {
+                var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
+                var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
+
+                if (!string.IsNullOrEmpty(apiKey?.Value) && !string.IsNullOrEmpty(apiSecret?.Value))
+                {
+                    return (true, apiKey.Value, apiSecret.Value);
+                }
+                else
+                {
+                    return (false, null, null);
+                }
+            }
         }
 
-        public static async Task<(bool IsSuccess, string ApiAddress)> GetApiAddressAsync()
+        public static async Task<(bool IsSuccess, string ApiAddress)> GetApiAddressAsync(Logger logger = null)
         {
             if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiAddressBinanceKey) is string apiAddressValue)
             {
                 return (true, apiAddressValue);
             }
 
-            await HelperMethods.Message("Не удалось получить данные адрес, проверьте настройки");
+            await HelperMethods.Message("Не удалось получить данные адрес, проверьте настройки", logger: logger);
             return (false, null);
         }
 
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync()
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -66,7 +84,7 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
@@ -75,7 +93,7 @@ namespace Binex.Api
                 result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC)).ToList());
         }
 
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(string asset)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(string asset, Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -96,7 +114,7 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
@@ -104,7 +122,7 @@ namespace Binex.Api
             return (true, result.Data.Balances.Where(x => x.Free != 0 && x.Asset == asset).ToList());
         }
 
-        public static async Task<(bool IsSuccess, List<BinanceUserCoin> Currencies)> GetAllCoinsAsync()
+        public static async Task<(bool IsSuccess, List<BinanceUserCoin> Currencies)> GetAllCoinsAsync(Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -125,14 +143,14 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
             return (true, result.Data.ToList());
         }
 
-        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string network = "BSC")
+        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string network = "BSC", Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -160,21 +178,22 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return false;
             }
 
-            await HelperMethods.Message("Оплата выставлена");
+            await HelperMethods.Message("Оплата выставлена", logger: logger);
 
             return true;
         }
 
         public static async Task<(bool IsSuccess, decimal? Average)> GetAverageBetweenCurreniesAsync(
-            string fromAsset, 
-            string toAsset, 
-            Binance.Net.Enums.KlineInterval interval, 
+            string fromAsset,
+            string toAsset,
+            Binance.Net.Enums.KlineInterval interval,
             DateTime startDate,
-            DateTime endDate)
+            DateTime endDate,
+            Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -195,14 +214,14 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
             return (true, result.Data.Average(x => x.Open));
         }
 
-        public static async Task<(bool IsSuccess, BinanceExchangeInfo Average)> GetExchangeRules()
+        public static async Task<(bool IsSuccess, BinanceExchangeInfo Average)> GetExchangeRules(Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -223,14 +242,14 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
             return (true, result.Data);
         }
 
-        public static async Task<(bool IsSuccess, BinancePrice Price)> GetPrice(string fromAsset, string toAsset)
+        public static async Task<(bool IsSuccess, BinancePrice Price)> GetPrice(string fromAsset, string toAsset, Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -251,42 +270,14 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return (false, null);
             }
 
             return (true, result.Data);
         }
 
-        public static async Task<(bool IsSuccess, List<BinanceOrderBookEntry> orders)> GetOrderBookAsync(string fromAsset, string toAsset = "USDT")
-        {
-            var apiData = await GetApiDataAsync();
-
-            if (!apiData.IsSuccess)
-            {
-                return (false, null);
-            }
-
-            var options = new BinanceClientOptions()
-            {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
-            };
-
-            var client = new BinanceClient(options);
-
-            var result = await client.Spot.Market.GetOrderBookAsync($"{fromAsset}{toAsset}", limit: 20);
-
-            if (result.ResponseStatusCode != SuccessCode)
-            {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
-                return (false, null);
-            }
-
-            return (true, result.Data.Asks.ToList());
-        }
-
-        public static async Task<bool> SellCoinAsync(decimal quantity, string fromAsset, string toAsset = "USDT")
+        public static async Task<bool> SellCoinAsync(decimal quantity, string fromAsset, string toAsset = "USDT", Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
@@ -307,7 +298,7 @@ namespace Binex.Api
 
             if (result.ResponseStatusCode != SuccessCode)
             {
-                await HelperMethods.Message($"Ошибка. {result.Error}");
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return false;
             }
 

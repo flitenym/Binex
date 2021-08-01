@@ -221,40 +221,7 @@ GROUP BY UserID
 
         private async Task BinancePayAsync()
         {
-            (bool isSuccess, List<BinanceBalance> currenies) = await BinanceApi.GetAllCurrenciesAsync();
-
-            if (!isSuccess)
-            {
-                return;
-            }
-
-            foreach (var currency in currenies)
-            {
-                // если цена между валютой текущей и USDT существует, то только тогда продадим
-                (bool isSuccessPriceUSDT, BinancePrice priceUSDT) = await BinanceApi.GetPrice(currency.Asset, StaticClass.USDT);
-                if (!isSuccessPriceUSDT)
-                {
-                    await BinanceApi.SellCoinAsync(currency.Free, currency.Asset, "USDT");
-                }
-                else
-                {
-                    // в случае если у нас есть по BTC, тогда нам нужно перевести в BTC, а затем получившийся BTC продать в USDT
-                    // GetAllCurrenciesAsync - ставит на первое место BTC, поэтому можем смело переводить и продавать
-                    (bool isSuccessPriceBTC, BinancePrice priceBTC) = await BinanceApi.GetPrice(currency.Asset, StaticClass.BTC);
-                    if (isSuccessPriceBTC)
-                    {
-                        // в случае если транзакцию нам нужно выполнять по продаже BTC, может она работает в течении секунды, поставим лучше ожидание
-                        await Task.Delay(2000);
-                        // получим BTC текущего кошелька и попробуем продать его
-                        (bool isSuccessBTC, List<BinanceBalance> curreniesBTC) = await BinanceApi.GetAllCurrenciesAsync(StaticClass.BTC);
-                        if (isSuccessBTC && curreniesBTC.Any())
-                        {
-                            var currencyBTC = curreniesBTC.First();
-                            await BinanceApi.SellCoinAsync(currencyBTC.Free, currencyBTC.Asset, StaticClass.BTC);
-                        }
-                    }
-                }
-            }
+            
         }
 
         #endregion
