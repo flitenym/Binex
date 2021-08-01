@@ -52,17 +52,6 @@ namespace Binex.Api
             }
         }
 
-        public static async Task<(bool IsSuccess, string ApiAddress)> GetApiAddressAsync(Logger logger = null)
-        {
-            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiAddressBinanceKey) is string apiAddressValue)
-            {
-                return (true, apiAddressValue);
-            }
-
-            await HelperMethods.Message("Не удалось получить данные адрес, проверьте настройки", logger: logger);
-            return (false, null);
-        }
-
         public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
@@ -150,18 +139,39 @@ namespace Binex.Api
             return (true, result.Data.ToList());
         }
 
-        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string network = "BSC", Logger logger = null)
+        public static async Task<(bool IsSuccess, BinanceUserCoin Currency)> GetCoinAsync(string asset, Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
 
             if (!apiData.IsSuccess)
             {
-                return false;
+                return (false, null);
             }
 
-            var apiAddress = await GetApiAddressAsync();
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
 
-            if (!apiAddress.IsSuccess)
+            var client = new BinanceClient(options);
+
+            var result = await client.General.GetUserCoinsAsync();
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, null);
+            }
+
+            return (true, result.Data.FirstOrDefault(x=>x.Coin == asset));
+        }
+
+        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string address, string network, Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
             {
                 return false;
             }
@@ -174,15 +184,13 @@ namespace Binex.Api
 
             var client = new BinanceClient(options);
 
-            var result = client.WithdrawDeposit.Withdraw(fromAsset, apiAddress.ApiAddress, amount, network: network, addressTag: toAsset);
+            var result = await client.WithdrawDeposit.WithdrawAsync(asset: fromAsset, address: address, amount: amount, network: network);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
                 await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
                 return false;
             }
-
-            await HelperMethods.Message("Оплата выставлена", logger: logger);
 
             return true;
         }

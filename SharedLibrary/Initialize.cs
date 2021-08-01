@@ -101,9 +101,6 @@ namespace SharedLibrary
                 var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
                 SharedProvider.SetToSingleton(InfoKeys.ApiSecretBinanceKey, apiSecret?.Value);
 
-                var apiAddress = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiAddressBinanceKey);
-                SharedProvider.SetToSingleton(InfoKeys.ApiAddressBinanceKey, apiAddress?.Value);
-
                 var binancePercent = await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinancePercentKey);
                 SharedProvider.SetToSingleton(InfoKeys.BinancePercentKey, binancePercent?.Value);
 

@@ -2,6 +2,7 @@
 using Binance.Net.Objects.Spot;
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
+using Binance.Net.Objects.Spot.WalletData;
 using Binex.Api;
 using Binex.Helper.StaticInfo;
 using CryptoExchange.Net.Authentication;
@@ -27,7 +28,7 @@ namespace Binex.ViewModel
         public decimal AgentEarnBtc { get; set; }
         public decimal? AgentEarnUSDT { get; set; }
         public decimal? UsdtToPay { get; set; }
-        public string BTS { get; set; }
+        public string Address { get; set; }
         public string IsUnique { get; set; }
         public bool IsSelected { get; set; }
         public PayInfo ShallowCopy()
@@ -81,8 +82,6 @@ namespace Binex.ViewModel
 
         #endregion
 
-
-
         #region Вычисление валюты
 
         public async Task<bool> GetCurrencyAsync()
@@ -134,7 +133,7 @@ namespace Binex.ViewModel
 
             var paysInfo = await SQLExecutor.SelectExecutorAsync<PayInfo>(@"
 WITH VarTable AS (
-	SELECT di.ID, di.UserID, di.AgentEarnBtc, ui.BTS, ui.IsUnique, True as IsSelected FROM DataInfo di
+	SELECT di.ID, di.UserID, di.AgentEarnBtc, ui.Address, ui.IsUnique, True as IsSelected FROM DataInfo di
 	LEFT JOIN UserInfo ui ON ui.UserID = di.UserID
 	WHERE LoadingDateTime IN (SELECT LoadingDateTime FROM DataInfo GROUP BY LoadingDateTime LIMIT 2) 
 )
@@ -221,7 +220,52 @@ GROUP BY UserID
 
         private async Task BinancePayAsync()
         {
-            
+            if (!PayInfoCollection.Any(x => x.IsSelected))
+            {
+                await HelperMethods.Message($"Не выбраны данные для отправки");
+                return;
+            }
+
+            var coinInfo = await BinanceApi.GetCoinAsync(StaticClass.USDT);
+
+            if (coinInfo.Currency == null)
+            {
+                await HelperMethods.Message($"Ошибка. Не найден {StaticClass.USDT}");
+                return;
+            }
+
+            BinanceNetwork network = null;
+
+            if (coinInfo.Currency.NetworkList.Any())
+            {
+                foreach (var networkInfo in coinInfo.Currency.NetworkList)
+                {
+                    if (networkInfo.Network == StaticClass.USDT_ADDRESS)
+                    {
+                        network = networkInfo;
+                    }
+                }
+            }
+
+            if (network == null)
+            {
+                await HelperMethods.Message($"Не удалось определить сеть для вывода");
+                return;
+            }
+
+            if (!network.WithdrawEnabled)
+            {
+                await HelperMethods.Message($"Для {network.Network} запрещен вывод");
+                return;
+            }
+
+            foreach (var payInfo in PayInfoCollection)
+            {
+                if (payInfo.IsSelected && !string.IsNullOrEmpty(payInfo.Address) && payInfo.UsdtToPay.HasValue && payInfo.UsdtToPay >= network.WithdrawMin)
+                {
+                    await BinanceApi.WithdrawalPlacedAsync(StaticClass.USDT, StaticClass.USDT, payInfo.UsdtToPay.Value, payInfo.Address, network.Network);
+                }
+            }
         }
 
         #endregion

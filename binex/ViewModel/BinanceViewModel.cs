@@ -29,11 +29,6 @@ namespace Binex.ViewModel
                 ApiSecret = apiSecretValue;
             }
 
-            if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiAddressBinanceKey) is string apiAddressValue)
-            {
-                ApiAddress = apiAddressValue;
-            }
-
             if (SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue)
             {
                 BinancePercent = binancePercentValue;
@@ -76,21 +71,6 @@ namespace Binex.ViewModel
             {
                 apiSecret = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(ApiSecret)));
-            }
-        }
-
-        #endregion
-
-        #region ApiAddress
-
-        private string apiAddress = string.Empty;
-        public string ApiAddress
-        {
-            get { return apiAddress; }
-            set
-            {
-                apiAddress = value;
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ApiAddress)));
             }
         }
 
@@ -194,7 +174,6 @@ namespace Binex.ViewModel
         {
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey, apiKey);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey, apiSecret);
-            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.ApiAddressBinanceKey, apiAddress);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.BinancePercentKey, binancePercent);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.BinanceFuturesPercentKey, binanceFuturesPercent);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailsKey, emails);
@@ -208,10 +187,6 @@ namespace Binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiSecretBinanceKey,
                     apiSecret);
-
-            SharedProvider.SetToSingleton(
-                    InfoKeys.ApiAddressBinanceKey,
-                    apiAddress);
 
             SharedProvider.SetToSingleton(
                     InfoKeys.BinancePercentKey,

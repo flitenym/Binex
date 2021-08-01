@@ -15,8 +15,8 @@ namespace SharedLibrary.LocalDataBase.Models
         [Description("Идентификатор пользователя")]
         public string UserID { get; set; }
 
-        [Description("BTS кошелек")]
-        public string BTS { get; set; }
+        [Description("Кошелек")]
+        public string Address { get; set; }
 
         [Description("Уникальный")]
         public string IsUnique { get; set; }
