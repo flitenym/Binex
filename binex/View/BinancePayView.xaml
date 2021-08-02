@@ -34,7 +34,7 @@
             CanUserSortColumns="True"
             ColumnWidth="*"
             EnableColumnVirtualization="False"
-            EnableRowVirtualization="False"
+            EnableRowVirtualization="True"
             Foreground="{DynamicResource WindowForeground}"
             GridLinesVisibility="None"
             ScrollViewer.CanContentScroll="True"

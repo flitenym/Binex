@@ -1,11 +1,6 @@
-﻿using Binance.Net;
-using Binance.Net.Objects.Spot;
-using Binance.Net.Objects.Spot.MarketData;
-using Binance.Net.Objects.Spot.SpotData;
-using Binance.Net.Objects.Spot.WalletData;
+﻿using Binance.Net.Objects.Spot.WalletData;
 using Binex.Api;
 using Binex.Helper.StaticInfo;
-using CryptoExchange.Net.Authentication;
 using SharedLibrary.Commands;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
@@ -31,10 +26,18 @@ namespace Binex.ViewModel
         public string Address { get; set; }
         public string IsUnique { get; set; }
         public bool IsSelected { get; set; }
+        public bool IsPaid { get; set; }
         public PayInfo ShallowCopy()
         {
             return (PayInfo)this.MemberwiseClone();
         }
+    }
+
+    public class Scale
+    {
+        public int ID { get; set; }
+        public double FromValue { get; set; }
+        public double Percent { get; set; }
     }
 
     public class BinancePayViewModel : INotifyPropertyChanged
@@ -82,6 +85,21 @@ namespace Binex.ViewModel
 
         #endregion
 
+        #region Получение данных
+
+        private async Task GetMainInfoAsync()
+        {
+            var apiData = await BinanceApi.GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return;
+            }
+            LoadInfoCommand.Execute(null);
+        }
+
+        #endregion
+
         #region Вычисление валюты
 
         public async Task<bool> GetCurrencyAsync()
@@ -118,24 +136,49 @@ namespace Binex.ViewModel
 
         #region Вычисление данные в таблице
 
-        public async Task GetPayInfoDataAsync()
+        private List<PayInfo> ConcatLists(List<PayInfo> first, List<PayInfo> second)
         {
-            var scaleInfo = await SQLExecutor.SelectExecutorAsync<ScaleInfo>(nameof(ScaleInfo), "order by FromValue desc");
+            List<PayInfo> result = new List<PayInfo>(first);
 
-            double binancePercent;
-
-            if (!(SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue &&
-                double.TryParse(binancePercentValue.Replace('.', ','), out binancePercent)))
+            foreach (var secondItem in second)
             {
-                await HelperMethods.Message("Не задан процент по умолчанию в настройках");
-                return;
+                var itemIndex = second.FindLastIndex(x => x.UserID == secondItem.UserID);
+                if (itemIndex == -1)
+                {
+                    result.Add(secondItem);
+                }
+                else
+                {
+                    result[itemIndex].AgentEarnBtc += secondItem.AgentEarnBtc;
+                    result[itemIndex].AgentEarnUSDT += secondItem.AgentEarnUSDT;
+                    result[itemIndex].UsdtToPay += secondItem.UsdtToPay;
+                }
             }
 
-            var paysInfo = await SQLExecutor.SelectExecutorAsync<PayInfo>(@"
+            return result;
+        }
+
+        private async Task<List<PayInfo>> GetResultPaysInfo(string dataInfoTableName, string scaleTableName, double settingsPercent, double defaultPercent)
+        {
+            var scale = await SQLExecutor.SelectExecutorAsync<Scale>(scaleTableName, "order by FromValue desc");
+
+            var paysInfo = await SQLExecutor.SelectExecutorAsync<PayInfo>($@"
 WITH VarTable AS (
-	SELECT di.ID, di.UserID, di.AgentEarnBtc, ui.Address, ui.IsUnique, True as IsSelected FROM DataInfo di
+	SELECT 
+        di.ID, 
+        di.UserID, 
+        di.AgentEarnBtc, 
+        ui.Address, 
+        ui.IsUnique, 
+        True as IsSelected, 
+        case di.IsPaid
+            when 'Нет'
+                then False
+            else True
+        end IsPaid
+    FROM {dataInfoTableName} di
 	LEFT JOIN UserInfo ui ON ui.UserID = di.UserID
-	WHERE LoadingDateTime IN (SELECT LoadingDateTime FROM DataInfo GROUP BY LoadingDateTime LIMIT 2) 
+	WHERE LoadingDateTime IN (SELECT LoadingDateTime FROM {dataInfoTableName} GROUP BY LoadingDateTime LIMIT 2) 
 )
 
 select * from VarTable
@@ -149,22 +192,50 @@ GROUP BY UserID
 
             foreach (var payInfo in paysInfo)
             {
+                if (payInfo.IsPaid) { continue; }
                 if (!resultPayInfo.Any(x => x.UserID == payInfo.UserID))
                 {
-                    var allUserInfo = paysInfo.Where(x => x.UserID == payInfo.UserID);
+                    var allUserInfo = paysInfo.Where(x => x.UserID == payInfo.UserID && !x.IsPaid);
                     var payInfoData = payInfo.ShallowCopy();
                     var first = allUserInfo.First();
                     var lastBtc = allUserInfo.LastOrDefault(x => x.ID != first.ID)?.AgentEarnBtc ?? 0;
                     payInfoData.AgentEarnBtc = Math.Abs(allUserInfo.First().AgentEarnBtc - lastBtc);
                     payInfoData.AgentEarnUSDT = payInfoData.AgentEarnBtc * UsdtCurrencyByBTC;
-                    var hungPercent = (double)payInfoData.AgentEarnUSDT.Value / binancePercent * 100;
-                    var percent = string.IsNullOrEmpty(payInfo.IsUnique?.Trim()) ? (scaleInfo.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? 20) / 100 : binancePercent / 100;
+                    var hungPercent = (double)payInfoData.AgentEarnUSDT.Value / settingsPercent * 100;
+                    var percent = string.IsNullOrEmpty(payInfo.IsUnique?.Trim()) ? (scale.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? defaultPercent) / 100 : settingsPercent / 100;
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
 
                     resultPayInfo.Add(payInfoData);
                 }
             }
+
+            return resultPayInfo;
+        }
+
+        public async Task GetPayInfoDataAsync()
+        {
+            double binancePercent;
+            double binanceFuturesPercent;
+
+            if (!(SharedProvider.GetFromDictionaryByKey(InfoKeys.BinancePercentKey) is string binancePercentValue &&
+                double.TryParse(binancePercentValue.Replace('.', ','), out binancePercent)))
+            {
+                await HelperMethods.Message("Не задан процент по умолчанию в настройках");
+                return;
+            }
+
+            if (!(SharedProvider.GetFromDictionaryByKey(InfoKeys.BinanceFuturesPercentKey) is string binanceFuturesPercentValue &&
+                double.TryParse(binanceFuturesPercentValue.Replace('.', ','), out binanceFuturesPercent)))
+            {
+                await HelperMethods.Message("Не задан процент фьючерс по умолчанию в настройках");
+                return;
+            }
+
+            var payInfo = await GetResultPaysInfo(nameof(DataInfo), nameof(ScaleInfo), binancePercent, StaticClass.DefaultUniquePercent);
+            var futuresPayInfo = await GetResultPaysInfo(nameof(FuturesDataInfo), nameof(FuturesScaleInfo), binanceFuturesPercent, StaticClass.DefaultUniqueFuturesPercent);
+
+            var resultPayInfo = ConcatLists(payInfo, futuresPayInfo);
 
             foreach (var payInfoCollectionItem in PayInfoCollection)
             {
@@ -185,9 +256,13 @@ GROUP BY UserID
 
         #endregion
 
-        #region Получение основной информации для оплаты
+        #region Загрузка данных
 
-        public async Task<bool> GetMainInfoAsync()
+        private AsyncCommand loadInfoCommand;
+
+        public AsyncCommand LoadInfoCommand => loadInfoCommand ?? (loadInfoCommand = new AsyncCommand(x => LoadInfoAsync()));
+
+        public async Task<bool> LoadInfoAsync()
         {
             if (!await GetCurrencyAsync()) return false;
             await GetPayInfoDataAsync();
@@ -204,7 +279,7 @@ GROUP BY UserID
 
         private async Task UpdateDataAsync()
         {
-            if (await GetMainInfoAsync())
+            if (await LoadInfoAsync())
             {
                 await HelperMethods.Message("Данные обновлены");
             }
@@ -261,11 +336,26 @@ GROUP BY UserID
 
             foreach (var payInfo in PayInfoCollection)
             {
-                if (payInfo.IsSelected && !string.IsNullOrEmpty(payInfo.Address) && payInfo.UsdtToPay.HasValue && payInfo.UsdtToPay >= network.WithdrawMin)
+                if (payInfo.IsSelected && !string.IsNullOrEmpty(payInfo.Address) && payInfo.UsdtToPay.HasValue && !payInfo.IsPaid)
                 {
-                    await BinanceApi.WithdrawalPlacedAsync(StaticClass.USDT, StaticClass.USDT, payInfo.UsdtToPay.Value, payInfo.Address, network.Network);
+                    var isSuccessWithrawal = await BinanceApi.WithdrawalPlacedAsync(StaticClass.USDT, StaticClass.USDT, payInfo.UsdtToPay.Value, payInfo.Address, network.Network);
+                    if (isSuccessWithrawal)
+                    {
+                        await SQLExecutor.QueryExecutorAsync($@"
+UPDATE {nameof(DataInfo)}
+SET IsPaid = 'Да'
+WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
+");
+                        await SQLExecutor.QueryExecutorAsync($@"
+UPDATE {nameof(FuturesDataInfo)}
+SET IsPaid = 'Да'
+WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
+");
+                    }
                 }
             }
+
+            LoadInfoCommand.Execute(null);
         }
 
         #endregion

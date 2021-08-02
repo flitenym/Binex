@@ -116,6 +116,11 @@ namespace SharedLibrary.Provider
         {
             if (Mapping.TryGetValue(key, out var obj))
             {
+                if (obj is string stringObj && string.IsNullOrWhiteSpace(stringObj))
+                {
+                    return null;
+                }
+
                 return obj;
             }
 

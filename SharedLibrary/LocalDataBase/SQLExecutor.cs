@@ -212,5 +212,24 @@ namespace SharedLibrary.LocalDataBase
                 }
             });
         }
+
+        public static async Task QueryExecutorAsync(string query)
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    using (var slc = new SQLiteConnection(LoadConnectionString))
+                    {
+                        await slc.OpenAsync();
+                        await slc.QueryAsync(query);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await HelperMethods.Message(ex.ToString());
+                }
+            });
+        }
     }
 }

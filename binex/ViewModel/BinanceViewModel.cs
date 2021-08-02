@@ -39,9 +39,7 @@ namespace Binex.ViewModel
                 BinanceFuturesPercent = binanceFuturesPercentValue;
             }
 
-            Task.Factory.StartNew(async () =>
-                await SetEmailsInfoFromDB()
-            );
+            EmailCommand.Execute(null);
         }
 
         #region Fields
@@ -153,7 +151,11 @@ namespace Binex.ViewModel
 
         #endregion
 
-        #region Methods
+        #region Команда для получение Email данных
+
+        private AsyncCommand emailCommand;
+
+        public AsyncCommand EmailCommand => emailCommand ?? (emailCommand = new AsyncCommand(x => SetEmailsInfoFromDB()));
 
         private async Task SetEmailsInfoFromDB()
         {
@@ -166,9 +168,9 @@ namespace Binex.ViewModel
 
         #region Команда для сохранения данных
 
-        private AsyncCommand loadCommand;
+        private AsyncCommand saveCommand;
 
-        public AsyncCommand SaveCommand => loadCommand ?? (loadCommand = new AsyncCommand(x => SaveAsync()));
+        public AsyncCommand SaveCommand => saveCommand ?? (saveCommand = new AsyncCommand(x => SaveAsync()));
 
         private async Task SaveAsync()
         {
