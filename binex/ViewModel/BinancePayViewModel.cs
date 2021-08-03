@@ -285,6 +285,8 @@ GROUP BY UserID
                 return;
             }
 
+            var numberPay = await SQLExecutor.SelectFirstExecutorAsync<int?>("SELECT NumberPay FROM PayHistory ORDER BY NumberPay DESC LIMIT 1") ?? 1;
+
             foreach (var payInfo in PayInfoCollection)
             {
                 if (payInfo.IsSelected && !string.IsNullOrEmpty(payInfo.Address) && payInfo.UsdtToPay.HasValue && payInfo.UsdtToPay >= network.WithdrawMin)
@@ -302,9 +304,14 @@ UPDATE {nameof(FuturesDataInfo)}
 SET IsPaid = 'Да'
 WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
 ");
+
+                        var payHistory = new PayHistory() { UserID = payInfo.UserID, SendedUsdt = Math.Round(payInfo.UsdtToPay.Value, 4), PayTime = DateTime.Now.ToString(), NumberPay = numberPay };
+                        await SQLExecutor.InsertExecutorAsync(payHistory, payHistory);
                     }
                 }
             }
+
+            await HelperMethods.Message("Оплата выполнена");
 
             LoadInfoCommand.Execute(null);
         }
