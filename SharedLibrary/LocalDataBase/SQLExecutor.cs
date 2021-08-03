@@ -13,7 +13,7 @@ namespace SharedLibrary.LocalDataBase
 {
     public static class SQLExecutor
     {
-        private static string loadConnectionString = ConfigurationManager.ConnectionStrings["LocalDataBase"].ConnectionString;
+        private static string loadConnectionString = ConfigurationManager.ConnectionStrings["LocalDataBase"].ConnectionString.Replace("{AppDir}", AppDomain.CurrentDomain.BaseDirectory);
 
         public static string LoadConnectionString
         {

@@ -36,6 +36,10 @@
 
         public static string EmailPasswordKey = "EmailPassword";
 
+        public static string CronKey = "Cron";
+
+        public static string BinexServiceNameKey = "BinexServiceName";
+
         #endregion
     }
 }

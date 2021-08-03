@@ -1,6 +1,8 @@
 ﻿using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedLibrary.Helper;
+using SharedLibrary.Helper.StaticInfo;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +12,7 @@ namespace BinexWorkerService
     public abstract class CronJobService : IHostedService, IDisposable
     {
         private System.Timers.Timer _timer;
-        private readonly CronExpression _expression;
+        private CronExpression _expression;
         private readonly TimeZoneInfo _timeZoneInfo;
 
         protected CronJobService(string cronExpression, TimeZoneInfo timeZoneInfo)
@@ -26,7 +28,14 @@ namespace BinexWorkerService
 
         protected virtual async Task ScheduleJob(CancellationToken cancellationToken)
         {
-            var next = _expression.GetNextOccurrence(DateTimeOffset.Now, _timeZoneInfo);
+            var cron = await HelperMethods.GetByKeyInDBAsync(InfoKeys.CronKey);
+
+            if (cron?.Value != null)
+            {
+                _expression = CronExpression.Parse(cron.Value);
+            }
+
+           var next = _expression.GetNextOccurrence(DateTimeOffset.Now, _timeZoneInfo);
             if (next.HasValue)
             {
                 var delay = next.Value - DateTimeOffset.Now;

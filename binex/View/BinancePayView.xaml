@@ -46,7 +46,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTC" Binding="{Binding AgentEarnBtc}" IsReadOnly="true" />
-                <DataGridTextColumn Header="BTC/USDT" Binding="{Binding StringFormat=N2, Path=AgentEarnUSDT}" IsReadOnly="true" />
+                <DataGridTextColumn Header="BTC/USDT" Binding="{Binding StringFormat=N2, Path=AgentEarnUsdt}" IsReadOnly="true" />
                 <DataGridTextColumn Header="USDT" Binding="{Binding StringFormat=N4, Path=UsdtToPay}" IsReadOnly="true" />
                 <DataGridTextColumn Header="Кошелек" Binding="{Binding Address}" IsReadOnly="true" />
                 <DataGridTemplateColumn Header="Использовать в оплате" Width="175">
@@ -66,14 +66,6 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock
-                Grid.Row="0"
-                Margin="2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                materialDesign:HintAssist.Hint="Средний курс BTC/USDT"
-                Text="{Binding StringFormat=N4, Path=UsdtCurrencyByBTC, UpdateSourceTrigger=PropertyChanged}"
-                TextWrapping="Wrap"/>
             <Button
                 Grid.Column="1"
                 Width="200"

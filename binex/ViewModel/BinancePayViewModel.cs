@@ -21,7 +21,7 @@ namespace Binex.ViewModel
         public int ID { get; set; }
         public string UserID { get; set; }
         public decimal AgentEarnBtc { get; set; }
-        public decimal? AgentEarnUSDT { get; set; }
+        public decimal AgentEarnUsdt { get; set; }
         public decimal? UsdtToPay { get; set; }
         public string Address { get; set; }
         public string IsUnique { get; set; }
@@ -67,22 +67,6 @@ namespace Binex.ViewModel
 
         #endregion
 
-        #region USDT относительно BTC
-
-        private decimal usdtCurrencyByBTC;
-
-        public decimal UsdtCurrencyByBTC
-        {
-            get { return usdtCurrencyByBTC; }
-            set
-            {
-                usdtCurrencyByBTC = value;
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(UsdtCurrencyByBTC)));
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region Получение данных
@@ -100,40 +84,6 @@ namespace Binex.ViewModel
 
         #endregion
 
-        #region Вычисление валюты
-
-        public async Task<bool> GetCurrencyAsync()
-        {
-            try
-            {
-                DateTime endDate = new DateTime(DateTime.UtcNow.Date.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day, 0, 0, 0);
-                DateTime startDate = endDate.AddDays(-6);
-
-                (bool IsSuccess, decimal? Average) = await BinanceApi.GetAverageBetweenCurreniesAsync(
-                    StaticClass.BTC,
-                    StaticClass.USDT,
-                    Binance.Net.Enums.KlineInterval.OneDay,
-                    startDate,
-                    endDate);
-
-                if (!IsSuccess)
-                {
-                    return false;
-                }
-
-                UsdtCurrencyByBTC = Average.Value;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await HelperMethods.Message($"Вычисление валюты {ex.Message}");
-                return false;
-            }
-        }
-
-        #endregion
-
         #region Вычисление данные в таблице
 
         private List<PayInfo> ConcatLists(List<PayInfo> first, List<PayInfo> second)
@@ -142,7 +92,7 @@ namespace Binex.ViewModel
 
             foreach (var secondItem in second)
             {
-                var itemIndex = second.FindLastIndex(x => x.UserID == secondItem.UserID);
+                var itemIndex = result.FindLastIndex(x => x.UserID == secondItem.UserID);
                 if (itemIndex == -1)
                 {
                     result.Add(secondItem);
@@ -150,7 +100,7 @@ namespace Binex.ViewModel
                 else
                 {
                     result[itemIndex].AgentEarnBtc += secondItem.AgentEarnBtc;
-                    result[itemIndex].AgentEarnUSDT += secondItem.AgentEarnUSDT;
+                    result[itemIndex].AgentEarnUsdt += secondItem.AgentEarnUsdt;
                     result[itemIndex].UsdtToPay += secondItem.UsdtToPay;
                 }
             }
@@ -167,7 +117,8 @@ WITH VarTable AS (
 	SELECT 
         di.ID, 
         di.UserID, 
-        di.AgentEarnBtc, 
+        di.AgentEarnBtc,
+        di.AgentEarnUsdt,
         ui.Address, 
         ui.IsUnique, 
         True as IsSelected, 
@@ -198,10 +149,14 @@ GROUP BY UserID
                     var allUserInfo = paysInfo.Where(x => x.UserID == payInfo.UserID && !x.IsPaid);
                     var payInfoData = payInfo.ShallowCopy();
                     var first = allUserInfo.First();
+                    // вычисление оплаты btc
                     var lastBtc = allUserInfo.LastOrDefault(x => x.ID != first.ID)?.AgentEarnBtc ?? 0;
-                    payInfoData.AgentEarnBtc = Math.Abs(allUserInfo.First().AgentEarnBtc - lastBtc);
-                    payInfoData.AgentEarnUSDT = payInfoData.AgentEarnBtc * UsdtCurrencyByBTC;
-                    var hungPercent = (double)payInfoData.AgentEarnUSDT.Value / settingsPercent * 100;
+                    payInfoData.AgentEarnBtc = Math.Abs(first.AgentEarnBtc - lastBtc);
+                    // вычисление оплаты usdt
+                    var lastUsdt = allUserInfo.LastOrDefault(x => x.ID != first.ID)?.AgentEarnUsdt ?? 0;
+                    payInfoData.AgentEarnUsdt = Math.Abs(first.AgentEarnUsdt - lastUsdt);
+
+                    var hungPercent = (double)payInfoData.AgentEarnUsdt / settingsPercent * 100;
                     var percent = string.IsNullOrEmpty(payInfo.IsUnique?.Trim()) ? (scale.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? defaultPercent) / 100 : settingsPercent / 100;
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
@@ -262,11 +217,9 @@ GROUP BY UserID
 
         public AsyncCommand LoadInfoCommand => loadInfoCommand ?? (loadInfoCommand = new AsyncCommand(x => LoadInfoAsync()));
 
-        public async Task<bool> LoadInfoAsync()
+        public async Task LoadInfoAsync()
         {
-            if (!await GetCurrencyAsync()) return false;
             await GetPayInfoDataAsync();
-            return true;
         }
 
         #endregion
@@ -279,10 +232,8 @@ GROUP BY UserID
 
         private async Task UpdateDataAsync()
         {
-            if (await LoadInfoAsync())
-            {
-                await HelperMethods.Message("Данные обновлены");
-            }
+            await LoadInfoAsync();
+            await HelperMethods.Message("Данные обновлены");
         }
 
         #endregion

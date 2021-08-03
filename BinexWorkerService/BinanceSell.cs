@@ -66,10 +66,10 @@ namespace BinexWorkerService
 
         private async Task<bool> Sell(Logger logger)
         {
-            var apiData = await BinanceApi.GetApiDataAsync(_logger);
+            var apiData = await BinanceApi.GetApiDataAsync(logger);
             if (!apiData.IsSuccess)
             {
-                _logger.Error($"Нет указанных данных ApiKey в настройках.");
+                logger.Error($"Нет указанных данных ApiKey в настройках.");
                 return false;
             }
 
@@ -78,19 +78,19 @@ namespace BinexWorkerService
             var emails = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailsKey);
             if (string.IsNullOrEmpty(emails?.Value))
             {
-                _logger.Error($"Нет указанных почтовых адресов в настройках.");
+                logger.Error($"Нет указанных почтовых адресов в настройках.");
                 isNeedSendEmail = false;
             }
             var emailLogin = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailLoginKey);
             var emailPassword = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailPasswordKey);
             if (string.IsNullOrEmpty(emailLogin?.Value))
             {
-                _logger.Error($"Не указана почта отправителя в настройках.");
+                logger.Error($"Не указана почта отправителя в настройках.");
                 isNeedSendEmail = false;
             }
             if (string.IsNullOrEmpty(emailPassword?.Value))
             {
-                _logger.Error($"Не указан пароль от почты отправителя в настройках.");
+                logger.Error($"Не указан пароль от почты отправителя в настройках.");
                 isNeedSendEmail = false;
             }
 

@@ -13,17 +13,27 @@ namespace SharedLibrary.LocalDataBase.Models
         [Description("Тип аккаунта")]
         public string AccountType { get; set; }
 
-        [Description("Был трейдинг")]
-        public string HasTrading { get; set; }
-
         [Description("Идентификатор пользователя")]
         public string UserID { get; set; }
 
         [Description("BTC")]
         public decimal AgentEarnBtc { get; set; }
 
+        [Description("USDT")]
+        public decimal AgentEarnUsdt { get; set; }
+
+        [Description("Был трейдинг")]
+        public string HasTrading { get; set; }
+
+        [Description("Счет аккаунта больше 1$")]
+        public string AccountBalance { get; set; }
+
         [Description("Дата приглашения")]
         public string InviteTime { get; set; }
+
+        [ColumnData(ShowInTable = false)]
+        [Description("Бонус")]
+        public string TotalReferralBonusEarn { get; set; }
 
         [ColumnData(IsReadOnly = true, DefaultValue = "", IsNullable = false)]
         [Description("Время загрузки")]
