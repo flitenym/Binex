@@ -399,7 +399,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
             
             Stream contentStream = null;
             string fileName = string.Empty;
-            TempFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\" + CurrentProgramm + @"\Temp";
+            TempFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\" + CurrentProgramm;
 
             if (File.Exists(LinkData))
             {
@@ -417,8 +417,16 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 {
                     IsDownload = true; 
                     client = new WebClient();
-                    contentStream = client.OpenRead(LinkData);
+                    contentStream = await client.OpenReadTaskAsync(LinkData);
                     string header_contentDisposition = client.ResponseHeaders["content-disposition"];
+
+                    if (header_contentDisposition == null)
+                    {
+                        await Message("Не получилось определить название файла");
+                        IsDownload = false;
+                        return;
+                    }
+
                     fileName = new ContentDisposition(header_contentDisposition).FileName.Replace(' ', '_');
 
                     TotalBytes = GetLength(contentStream);
@@ -438,6 +446,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 {
                     await Message(ex.Message);
                     IsDownload = false;
+                    CheckFolder(TempFolderPath);
                 }
                 finally
                 {
