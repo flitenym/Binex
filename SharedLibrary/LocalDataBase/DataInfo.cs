@@ -4,7 +4,7 @@ using SharedLibrary.Helper.Attributes;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "Данные", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true)]
+    [ModelClass(TableTitle = "Данные Спот", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true)]
     public class DataInfo : ModelClass
     {
         [ColumnData(ShowInTable = false)]

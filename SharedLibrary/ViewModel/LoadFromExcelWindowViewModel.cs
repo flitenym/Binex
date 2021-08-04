@@ -140,7 +140,7 @@ $@"При загрузке из Excel следует придерживатьс�
 
                                 var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
                                 var objAgentEarnBtc = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
-                                if (objAgentEarnBtc != null && decimal.TryParse(objAgentEarnBtc.Replace('.', ','), out var objAgentEarnBtcDecimal))
+                                if (objAgentEarnBtc != null && decimal.TryParse(objAgentEarnBtc.Replace(",","").Replace('.', ','), out var objAgentEarnBtcDecimal))
                                 {
                                     var objLikeInDataInfo = dataInfos.FirstOrDefault(x => x.UserID == objUserID && x.AgentEarnBtc > objAgentEarnBtcDecimal);
                                     if (objLikeInDataInfo != null)

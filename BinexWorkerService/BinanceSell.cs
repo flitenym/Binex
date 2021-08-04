@@ -105,6 +105,13 @@ namespace BinexWorkerService
                 isNeedSendEmail = false;
             }
 
+            // перевод USDT из фьючерс в спот
+            bool isSuccessTransferSpot = await BinanceApi.TransferSpotToUsdtAsync(logger: logger);
+
+            // перевод мелких монет в BNB
+            (bool isSuccessTransferDust, string messageTransferDust) = await BinanceApi.TransferDustAsync(logger: logger);            
+
+            // продаем все монетки
             (bool isSuccess, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesAsync(logger: logger);
 
             if (!isSuccess)
@@ -150,7 +157,7 @@ namespace BinexWorkerService
 
             if (isNeedSendEmail)
             {
-                var body = CreateEmailBody(currenciesInfo);
+                var body = CreateEmailBody(currenciesInfo, (isSuccessTransferSpot ? "<p>Перевод USDT из фьючерс в спот был осуществлен.</p>" : ""), (!string.IsNullOrEmpty(messageTransferDust) ? $"<p>{messageTransferDust}</p>" : ""));
                 var emailsInfo = emails.Value.Split(',');
                 foreach (var email in emailsInfo)
                 {
@@ -161,7 +168,7 @@ namespace BinexWorkerService
             return false;
         }
 
-        private string CreateEmailBody(List<CurrencyInfo> currenciesInfo)
+        private string CreateEmailBody(List<CurrencyInfo> currenciesInfo, string transferSpot, string transferDust)
         {
             if (currenciesInfo.Any())
             {
@@ -176,6 +183,8 @@ namespace BinexWorkerService
 <html>
 <body style=""font-family: Helvetica;"">
 	<p>Информация о продаже криптовалют</p>
+    {transferSpot}
+    {transferDust}
     <div style=""box-shadow: 0px 35px 50px rgba( 0, 0, 0, 0.2 );"">
 		<table style=""border-collapse: collapse;"" width=""100%"">
 			<thead>

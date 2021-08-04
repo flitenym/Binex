@@ -44,7 +44,7 @@ namespace SharedLibrary.ViewModel
             models.ForEach(x => x.SetCanLoad(GetModelCanLoadAttribute(x)));
             models.ForEach(x => x.SetIsVisible(GetModelIsVisibleAttribute(x)));
 
-            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true));
+            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true).OrderBy(x=>x.Title));
 
             FilterCollection = new CollectionViewSource
             {

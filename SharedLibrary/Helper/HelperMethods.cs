@@ -434,8 +434,15 @@ namespace SharedLibrary.Helper
 
             if (files.Length == 0)
             {
-                //TODO создать окно красивое для показа инфы по лицензии
-                //throw new ApplicationException($"Ваша копия программы не лицензирована! Не найден файл лицензии с расширением \".lic\". Обратитесь к автору.");
+                if (logger == null)
+                {
+                    GetModalOk("Не найдена лицензия .lic");
+                }
+                else
+                {
+                    logger.Info("Не найдена лицензия .lic");
+                }
+                
                 return false;
             }
 
@@ -463,7 +470,7 @@ namespace SharedLibrary.Helper
                 {
                     if (logger == null)
                     {
-                        return GetModalOk(licenseInfo);
+                        GetModalOk(licenseInfo);
                     }
                     else
                     {
@@ -480,7 +487,7 @@ namespace SharedLibrary.Helper
                 {
                     if (logger == null)
                     {
-                        return GetModalOk(Message);
+                        GetModalOk(Message);
                     }
                     else
                     {

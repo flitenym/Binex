@@ -82,6 +82,34 @@ namespace Binex.Api
                 result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC)).ToList());
         }
 
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesAsync(Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, null);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.General.GetAccountInfoAsync();
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, null);
+            }
+
+            return (true, result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.BNB).ToList());
+        }
+
         public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(string asset, Logger logger = null)
         {
             var apiData = await GetApiDataAsync();
@@ -164,7 +192,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            return (true, result.Data.FirstOrDefault(x=>x.Coin == asset));
+            return (true, result.Data.FirstOrDefault(x => x.Coin == asset));
         }
 
         public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string address, string network, Logger logger = null)
@@ -311,6 +339,167 @@ namespace Binex.Api
             }
 
             return true;
+        }
+
+        public static async Task<(bool IsSuccess, decimal? Balance)> GetFuturesUsdtAccountUsdtBalanceAsync(Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, null);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var accountInfoResult = await client.FuturesUsdt.Account.GetAccountInfoAsync();
+
+            if (accountInfoResult.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {accountInfoResult.Error}", logger: logger);
+                return (false, null);
+            }
+
+            var futuresUsdtInfo = accountInfoResult.Data.Assets.FirstOrDefault(x => x.Asset == StaticClass.USDT);
+
+            if (futuresUsdtInfo == null)
+            {
+                await HelperMethods.Message($"Ошибка. Не найдена монета {StaticClass.USDT} во Фьючерсном кошельке", logger: logger);
+                return (false, null);
+            }
+
+            return (true, futuresUsdtInfo.WalletBalance);
+        }
+
+        public static async Task<bool> TransferSpotToUsdtAsync(Logger logger = null)
+        {
+            (bool isAccountUsdtSuccess, decimal? balance) = await GetFuturesUsdtAccountUsdtBalanceAsync();
+
+            if (!isAccountUsdtSuccess)
+            {
+                return false;
+            }
+
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return false;
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.Spot.Futures.TransferFuturesAccountAsync(StaticClass.USDT, balance.Value, Binance.Net.Enums.FuturesTransferType.FromUsdtFuturesToSpot);
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static async Task<(bool IsSuccess, Dictionary<string, BinanceAssetDetails> AssetDetails)> GetBinanceAssetDetails(Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, null);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.WithdrawDeposit.GetAssetDetailsAsync();
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, null);
+            }
+
+            return (true, result.Data);
+        }
+
+        public static async Task<(bool IsSuccess, string Message)> TransferDustAsync(Logger logger = null)
+        {
+            (bool isSuccessAssetDetails, Dictionary<string, BinanceAssetDetails> assetDetails) = await GetBinanceAssetDetails(logger);
+
+            if (!isSuccessAssetDetails)
+            {
+                return (false, null);
+            }
+
+            (bool isSuccessGeneralAllCurrencies, List<BinanceBalance> currencies) = await GetGeneralAllCurrenciesAsync(logger);
+
+            if (!isSuccessGeneralAllCurrencies)
+            {
+                return (false, null);
+            }
+
+            List<string> assets = new List<string>();
+
+            foreach (var currency in currencies)
+            {
+                if (assetDetails.TryGetValue(currency.Asset, out var binanceAssetDetails))
+                {
+                    if (currency.Free < binanceAssetDetails.MinimalWithdrawAmount)
+                    {
+                        assets.Add(currency.Asset);
+                    }
+                }
+            }
+
+            if (!assets.Any())
+            {
+                string message = $"Нет монет с маленьким балансом.";
+                await HelperMethods.Message(message, logger: logger);
+                return (true, message);
+            }
+
+            var apiData = await GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, null);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.General.DustTransferAsync(assets);
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, null);
+            }
+
+            return (true, "Перевод монет с маленьким балансом выполнен.");
         }
     }
 }
