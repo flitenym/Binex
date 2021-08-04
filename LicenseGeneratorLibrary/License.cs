@@ -119,9 +119,9 @@ namespace LicenseGenerator
                 var days = (DateTime.Now.Date - terms.StartDate.AddMonths(terms.Month).Date).TotalDays;
                 if (days <= 3)
                 {
-                    return (true, terms.StartDate, terms.StartDate.AddMonths(terms.Month).Date.ToString(), terms.UserName, terms.ProductName, $"Лицензия истекает через {days} {(days == 1 ? "день" : "дня")}");
+                    return (true, terms.StartDate, terms.StartDate.AddMonths(terms.Month).ToShortDateString(), terms.UserName, terms.ProductName, $"Лицензия истекает через {days} {(days == 1 ? "день" : "дня")}");
                 }
-                return (true, terms.StartDate, terms.StartDate.AddMonths(terms.Month).Date.ToString(), terms.UserName, terms.ProductName, null);
+                return (true, terms.StartDate, terms.StartDate.AddMonths(terms.Month).ToShortDateString(), terms.UserName, terms.ProductName, null);
             }
             else
             {

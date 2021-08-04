@@ -9,8 +9,19 @@
         #region Ключи в настройках
 
         public static string ConnectionStringKey = "ConnectionString";
+
         public static string SelectedThemeKey = "SelectedTheme";
+
         public static string SelectedThemeDarkOrLightKey = "SelectedThemeDarkOrLight";
+        public static string EmailsKey = "Emails";
+
+        public static string EmailLoginKey = "EmailLogin";
+
+        public static string EmailPasswordKey = "EmailPassword";
+
+        public static string CronKey = "Cron";
+
+        public static string BinexServiceNameKey = "BinexServiceName";
 
         #endregion
 
@@ -24,21 +35,15 @@
 
         public static string ApiSecretBinanceKey = "ApiSecret";
 
-        public static string ApiAddressBinanceKey = "ApiAddress";
-
         public static string BinancePercentKey = "BinancePercent";
 
         public static string BinanceFuturesPercentKey = "BinanceFuturesPercent";
 
-        public static string EmailsKey = "Emails";
+        public static string CompanyNameKey = "CompanyName";
 
-        public static string EmailLoginKey = "EmailLogin";
+        public static string DirectorNameKey = "DirectorName";
 
-        public static string EmailPasswordKey = "EmailPassword";
-
-        public static string CronKey = "Cron";
-
-        public static string BinexServiceNameKey = "BinexServiceName";
+        public static string LicenseInfoKey = "LicenseInfo";
 
         #endregion
     }

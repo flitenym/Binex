@@ -125,11 +125,6 @@ namespace SharedLibrary.ViewModel
         public WebClient client;
 
         /// <summary>
-        /// Показывает версию текущую
-        /// </summary>
-        public string AppVersion => "Version: " + GetVersion();
-
-        /// <summary>
         /// Правила для формирования обновления
         /// </summary>
         public string LinkRules =>
@@ -313,6 +308,59 @@ $@"1. Файл должен скачиваться по ссылке из инт
 
         #endregion
 
+        #region Не обновлять данные программы
+
+        private bool isDataBaseUpdate = true;
+
+        public bool IsDataBaseUpdate
+        {
+            get
+            {
+                return isDataBaseUpdate;
+            }
+            set
+            {
+                isDataBaseUpdate = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsDataBaseUpdate)));
+            }
+        }
+
+        #endregion
+
+        #region Обновить лицензию
+
+        private bool isLicenseUpdate = true;
+
+        public bool IsLicenseUpdate
+        {
+            get
+            {
+                return isLicenseUpdate;
+            }
+            set
+            {
+                isLicenseUpdate = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsLicenseUpdate)));
+            }
+        }
+
+        #endregion
+
+        #region Информация о программе
+
+        public string CompanyName => SharedProvider.GetFromDictionaryByKey(InfoKeys.CompanyNameKey).ToString();
+
+        /// <summary>
+        /// Показывает версию текущую
+        /// </summary>
+        public string AppVersion => "Version: " + GetVersion();
+
+        public string DirectorName => SharedProvider.GetFromDictionaryByKey(InfoKeys.DirectorNameKey).ToString();
+
+        public string LicenseInfo => SharedProvider.GetFromDictionaryByKey(InfoKeys.LicenseInfoKey).ToString();
+
+        #endregion
+
         #endregion
 
         #region Команда для начала обновления программы
@@ -376,25 +424,30 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 string startProgramm = $@"start /D ""{ProgramFolderWithFilePath}\"" {CurrentProgramm}.exe"; //запуск программы
                 string removeTempFolder = $@"powershell Remove-Item {TempFolderPath} -Recurse -Force"; //удалим временную папку куда шла разархивация
 
-                bool licenseBackup = true;
                 string licenseBackupCmd = string.Empty;
                 string licenseRestoreCmd = string.Empty;
-                if (licenseBackup)
+                if (!IsLicenseUpdate)
                 {
-                    licenseBackupCmd = $@" && powershell Copy-Item ""{ProgramFolderWithFilePath}\*.lic"" -Destination ""{TempFolderPath}""";
-                    licenseRestoreCmd = $@" && powershell Copy-Item ""{TempFolderPath}\*.lic"" -Destination ""{ProgramFolderWithFilePath}""";
+                    licenseBackupCmd = $@"&& powershell Copy-Item ""{ProgramFolderWithFilePath}\*.lic"" -Destination ""{TempFolderPath}""";
+                    licenseRestoreCmd = $@"&& powershell Copy-Item ""{TempFolderPath}\*.lic"" -Destination ""{ProgramFolderWithFilePath}""";
                 }
 
-                bool dataBaseBackup = true;
                 string dataBaseBackupCmd = string.Empty;
                 string dataBaseRestoreCmd = string.Empty;
-                if (dataBaseBackup)
+                if (IsDataBaseUpdate)
                 {
-                    dataBaseBackupCmd = $@" && powershell Copy-Item ""{ProgramFolderWithFilePath}\*.db"" -Destination ""{TempFolderPath}""";
-                    dataBaseRestoreCmd = $@" && powershell Copy-Item ""{TempFolderPath}\*.db"" -Destination ""{ProgramFolderWithFilePath}""";
+                    dataBaseBackupCmd = $@"&& powershell Copy-Item ""{ProgramFolderWithFilePath}\*.db"" -Destination ""{TempFolderPath}""";
+                    dataBaseRestoreCmd = $@"&& powershell Copy-Item ""{TempFolderPath}\*.db"" -Destination ""{ProgramFolderWithFilePath}""";
                 }
 
-                pc.StartInfo.Arguments = $"{cdC} {licenseBackupCmd} {dataBaseBackupCmd} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout} {licenseBackupCmd} {dataBaseBackupCmd} && {startProgramm} && {removeTempFolder}";
+                var serviceName = (await GetByKeyInDBAsync(InfoKeys.BinexServiceNameKey))?.Value;
+                string serviceRestartCmd = string.Empty;
+                if (!string.IsNullOrEmpty(serviceName))
+                {
+                    serviceRestartCmd = $@"&& powershell -command ""Restart-Service {serviceName} -Force""";
+                }
+
+                pc.StartInfo.Arguments = $"{cdC} {licenseBackupCmd} {dataBaseBackupCmd} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout} {licenseRestoreCmd} {dataBaseRestoreCmd} && {startProgramm} && {removeTempFolder} {serviceRestartCmd}";
                 pc.Start();
 
                 await Application.Current.Dispatcher.BeginInvoke(new Action(() =>

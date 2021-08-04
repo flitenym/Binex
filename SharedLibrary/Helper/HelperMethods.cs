@@ -351,12 +351,16 @@ namespace SharedLibrary.Helper
 
         #endregion
 
+        #region Информация о программе
+
         public static string GetVersion()
         {
             var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == AppDomain.CurrentDomain.FriendlyName.Replace(".exe", "")) ?? Assembly.GetExecutingAssembly();
 
             return assembly.GetName().Version.ToString();
         }
+
+        #endregion
 
         #region DB operations by Key
 
@@ -446,6 +450,19 @@ namespace SharedLibrary.Helper
                 }
 
                 //TODO создать окно красивое для показа инфы по лицензии
+                string licenseInfo = string.Empty;
+                if (string.IsNullOrEmpty(Message))
+                {
+                    licenseInfo = Message;
+                }
+                else
+                {
+                    licenseInfo = $"Лицензия активна до {endDate}";
+                }
+
+                SharedProvider.SetToSingleton(InfoKeys.CompanyNameKey, productName);
+                SharedProvider.SetToSingleton(InfoKeys.DirectorNameKey, userName);
+                SharedProvider.SetToSingleton(InfoKeys.LicenseInfoKey, licenseInfo);
 
                 return true;
             }

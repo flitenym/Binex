@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     xmlns:bhv="clr-namespace:SharedLibrary.Behavior"  
@@ -33,56 +34,99 @@
 
         </ResourceDictionary>
     </UserControl.Resources>
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250" MinWidth="222" />
-            <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="150" />
-            <RowDefinition Height="150" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <GridSplitter
-            Grid.RowSpan="3"
-            Grid.Column="1"
-            Width="Auto"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            ShowsPreview="True" />
+        <ScrollViewer Style="{DynamicResource ScrollViewerStyle}" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250" MinWidth="222" />
+                    <ColumnDefinition Width="2" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="150" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="5"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                    Text="Программа"
+                    TextAlignment="Center" />
 
-        <TextBlock
-            Grid.Row="0"
-            Grid.Column="2"
-            Margin="5"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            FontSize="12"
-            Text="{Binding AppVersion}" />
+                <Grid Grid.Row="0" Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        Margin="5"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+                        Text="{Binding CompanyName, Mode=OneWay}"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="5"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        FontSize="12"
+                        Text="{Binding AppVersion}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Margin="5"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                        Text="{Binding DirectorName, Mode=OneWay}"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Margin="5"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                        Text="{Binding LicenseInfo, Mode=OneWay}"
+                        TextAlignment="Center" />
+                </Grid>
 
-        <TextBlock
-            Grid.Row="0"
+                <TextBlock
+            Grid.Row="1"
             Grid.Column="0"
             Margin="5"
             VerticalAlignment="Center"
             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
             Text="Обновление"
             TextAlignment="Center" />
-        
-        <Grid
-            Grid.Row="0"
+                <Grid
+            Grid.Row="1"
             Grid.Column="2"
             Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="180" Width="*"/>
-                <ColumnDefinition MinWidth="200" Width="250"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="45" />
-            </Grid.RowDefinitions>
-            <TextBox
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="180" Width="*"/>
+                        <ColumnDefinition MinWidth="200" Width="250"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="45" />
+                        <RowDefinition Height="45" />
+                    </Grid.RowDefinitions>
+                    <TextBox
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Grid.Row="0"
@@ -98,7 +142,7 @@
                 TextWrapping="Wrap"
                 ToolTip="{Binding LinkRules, Mode=OneWay}"
                 ToolTipService.ShowDuration="12000" />
-            <Button
+                    <Button
                 Grid.Row="1"
                 Grid.Column="2"
                 Margin="2"
@@ -108,56 +152,78 @@
                 Content="Обновление программы"
                 Foreground="{DynamicResource PreWindowButtonForeground}"
                 Style="{StaticResource MaterialDesignRaisedButton}" />
-            <Grid Margin="5" Grid.Row="1" Grid.Column="0" bhv:DropBehavior.PreviewDropCommand="{Binding PreviewDropCommand}">
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Setter Property="Visibility" Value="Visible" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsHavePath}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                <Rectangle AllowDrop="True" Fill="{DynamicResource DragAndDropRectangleFill}" RadiusX="5" RadiusY="5" Stroke="{DynamicResource DragAndDropForeground}" StrokeThickness="1" StrokeDashArray="3">
-                    <Rectangle.Triggers>
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation
+                    <Grid Margin="5" Grid.Row="1" Grid.Column="0">
+                        <!--bhv:DropBehavior.PreviewDropCommand="{Binding PreviewDropCommand}"-->
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsHavePath}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Rectangle AllowDrop="True" Fill="{DynamicResource DragAndDropRectangleFill}" RadiusX="5" RadiusY="5" Stroke="{DynamicResource DragAndDropForeground}" StrokeThickness="1" StrokeDashArray="3">
+                            <Rectangle.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
                                        RepeatBehavior="Forever" 
                                        From="0" To="100"
                                        Duration="0:0:12"
                                        Storyboard.TargetProperty="StrokeDashOffset" />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Rectangle.Triggers>
-                </Rectangle>
-                <TextBlock AllowDrop="True" Text="Перенесите файл" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Foreground="{DynamicResource DragAndDropForeground}"/>
-            </Grid>
-            
-        </Grid>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                        <TextBlock AllowDrop="True" Text="Перенесите файл" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Foreground="{DynamicResource DragAndDropForeground}"/>
+                    </Grid>
 
-        <TextBlock
-            Grid.Row="1"
+                    <Grid Grid.Row="2" Grid.ColumnSpan="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding IsDataBaseUpdate}"
+                    Content="Не обновлять данные программы"
+                    ToolTip="Если флаг не указан, то обновится база данных"/>
+                        <CheckBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding IsLicenseUpdate}"
+                    Content="Обновить лицензию"
+                    ToolTip="Если флаг указан, то лицензия обновится"/>
+                    </Grid>
+                </Grid>
+
+                <TextBlock
+            Grid.Row="2"
             Grid.Column="0"
             Margin="5"
             VerticalAlignment="Center"
             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
             Text="Темы"
             TextAlignment="Center" />
-        <ScrollViewer
-            Grid.Row="1"
+                <ScrollViewer
+            Grid.Row="2"
             Grid.Column="2"
             HorizontalScrollBarVisibility="Auto"
             Style="{DynamicResource ScrollViewerStyle}">
-            <StackPanel
+                    <StackPanel
                 Margin="0,0,20,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 Orientation="Horizontal">
-                <Button
+                        <Button
                     x:Name="Dark"
                     Width="auto"
                     Height="auto"
@@ -165,13 +231,13 @@
                     Command="{Binding GlobalThemeAcceptor}"
                     CommandParameter="{Binding Name, ElementName=Dark}"
                     Style="{DynamicResource ButtonZoom}">
-                    <materialDesign:PackIcon
+                            <materialDesign:PackIcon
                         Width="50"
                         Height="Auto"
                         Foreground="{StaticResource DarkButton}"
                         Kind="Drop" />
-                </Button>
-                <Button
+                        </Button>
+                        <Button
                     x:Name="Light"
                     Width="auto"
                     Height="auto"
@@ -179,13 +245,13 @@
                     Command="{Binding GlobalThemeAcceptor}"
                     CommandParameter="{Binding Name, ElementName=Light}"
                     Style="{DynamicResource ButtonZoom}">
-                    <materialDesign:PackIcon
+                            <materialDesign:PackIcon
                         Width="50"
                         Height="Auto"
                         Foreground="{StaticResource LightButton}"
                         Kind="Drop" />
-                </Button>
-                <Button
+                        </Button>
+                        <Button
                     x:Name="Blue"
                     Width="auto"
                     Height="auto"
@@ -193,13 +259,13 @@
                     Command="{Binding ThemeAcceptor}"
                     CommandParameter="{Binding Name, ElementName=Blue}"
                     Style="{DynamicResource ButtonZoom}">
-                    <materialDesign:PackIcon
+                            <materialDesign:PackIcon
                         Width="50"
                         Height="Auto"
                         Foreground="{StaticResource BlueButton}"
                         Kind="Drop" />
-                </Button>
-                <Button
+                        </Button>
+                        <Button
                     x:Name="Green"
                     Width="auto"
                     Height="auto"
@@ -207,13 +273,13 @@
                     Command="{Binding ThemeAcceptor}"
                     CommandParameter="{Binding Name, ElementName=Green}"
                     Style="{DynamicResource ButtonZoom}">
-                    <materialDesign:PackIcon
+                            <materialDesign:PackIcon
                         Width="50"
                         Height="Auto"
                         Foreground="{StaticResource GreenButton}"
                         Kind="Drop" />
-                </Button>
-                <Button
+                        </Button>
+                        <Button
                     x:Name="Red"
                     Width="auto"
                     Height="auto"
@@ -221,34 +287,24 @@
                     Command="{Binding ThemeAcceptor}"
                     CommandParameter="{Binding Name, ElementName=Red}"
                     Style="{DynamicResource ButtonZoom}">
-                    <materialDesign:PackIcon
+                            <materialDesign:PackIcon
                         Width="50"
                         Height="Auto"
                         Foreground="{StaticResource RedButton}"
                         Kind="Drop" />
-                </Button>
-            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
         </ScrollViewer>
-
         <Grid
             Grid.RowSpan="3"
             Grid.ColumnSpan="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom">
             <Grid.RenderTransform>
-                <TranslateTransform Y="135" />
+                <TranslateTransform Y="140" />
             </Grid.RenderTransform>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="25" />
-                <RowDefinition Height="25" />
-                <RowDefinition Height="25" />
-                <RowDefinition Height="25" />
-                <RowDefinition Height="35" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="150" />
-            </Grid.ColumnDefinitions>
             <Grid.Style>
                 <Style>
                     <Style.Triggers>
@@ -258,7 +314,7 @@
                                     <Storyboard>
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                                            To="-100"
+                                            To="-80"
                                             Duration="0:0:0.8" />
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -268,7 +324,7 @@
                                     <Storyboard>
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                                            To="135"
+                                            To="140"
                                             Duration="0:0:0.8" />
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -277,51 +333,66 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                Text="Скорость:" />
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="1"
-                HorizontalAlignment="Right"
-                Text="{Binding DownloadSpeed}" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                Text="Выполнено:" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="1"
-                HorizontalAlignment="Right"
-                Text="{Binding DownloadPercent}" />
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                HorizontalAlignment="Center"
-                Text="{Binding Download}" />
-            <ProgressBar
-                Grid.Row="3"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Margin="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Value="{Binding ProgressBarValue}" />
-            <Button
-                Grid.Row="4"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Margin="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Command="{Binding CancelDownloadCommand}"
-                Content="Отменить скачивание"
-                Foreground="{DynamicResource PreWindowButtonForeground}"
-                Style="{DynamicResource MaterialDesignRaisedButton}" />
+            <Border Background="{DynamicResource WindowBackground}" BorderThickness="1,1,1,1" CornerRadius="5,5,5,5" Padding="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        Text="Скорость:" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Text="{Binding DownloadSpeed}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        Text="Выполнено:" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Text="{Binding DownloadPercent}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        HorizontalAlignment="Center"
+                        Text="{Binding Download}" />
+                    <ProgressBar
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Value="{Binding ProgressBarValue}" />
+                    <Button
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding CancelDownloadCommand}"
+                        Content="Отменить скачивание"
+                        Foreground="{DynamicResource PreWindowButtonForeground}"
+                        Style="{DynamicResource MaterialDesignRaisedButton}" />
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>
