@@ -31,12 +31,6 @@ namespace SharedLibrary
             Application.Current.MainWindow = splashScreen;
             splashScreen.Show();
 
-            if (!HelperMethods.LicenseVerify())
-            {
-                splashScreen.Close();
-                return;
-            }
-
             Application.Current.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
             Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -71,8 +65,14 @@ namespace SharedLibrary
                 SharedProvider.SetToSingleton(InfoKeys.BinanceFuturesPercentKey, binanceFuturesPercent?.Value);
 
                 var mainWindow = new MainWindowView();
-
                 mainWindow.DataContext = vm;
+
+                if (!HelperMethods.LicenseVerify())
+                {
+                    splashScreen.Close();
+                    return;
+                }
+
                 Application.Current.MainWindow = mainWindow;
                 mainWindow.Show();
                 splashScreen.Close();

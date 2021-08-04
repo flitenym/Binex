@@ -21,6 +21,7 @@ using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.LocalDataBase;
 using SharedLibrary.LocalDataBase.Models;
 using SharedLibrary.Provider;
+using SharedLibrary.View;
 using SharedLibrary.ViewModel;
 
 namespace SharedLibrary.Helper
@@ -427,7 +428,7 @@ namespace SharedLibrary.Helper
 
         #region License
 
-        public static bool LicenseVerify()
+        public static bool LicenseVerify(Logger logger = null)
         {
             string[] files = System.IO.Directory.GetFiles(Environment.CurrentDirectory, "*.lic");
 
@@ -444,14 +445,9 @@ namespace SharedLibrary.Helper
 
             if (isValid)
             {
-                if (string.IsNullOrEmpty(Message))
-                {
-                    return true;
-                }
-
-                //TODO создать окно красивое для показа инфы по лицензии
                 string licenseInfo = string.Empty;
-                if (string.IsNullOrEmpty(Message))
+
+                if (!string.IsNullOrEmpty(Message))
                 {
                     licenseInfo = Message;
                 }
@@ -459,19 +455,61 @@ namespace SharedLibrary.Helper
                 {
                     licenseInfo = $"Лицензия активна до {endDate}";
                 }
-
                 SharedProvider.SetToSingleton(InfoKeys.CompanyNameKey, productName);
                 SharedProvider.SetToSingleton(InfoKeys.DirectorNameKey, userName);
                 SharedProvider.SetToSingleton(InfoKeys.LicenseInfoKey, licenseInfo);
+
+                if (!string.IsNullOrEmpty(Message))
+                {
+                    if (logger == null)
+                    {
+                        return GetModalOk(licenseInfo);
+                    }
+                    else
+                    {
+                        logger.Info(Message);
+                    }
+                    return true;
+                }
 
                 return true;
             }
             else
             {
-                //TODO создать окно красивое для показа инфы по лицензии
+                if (!string.IsNullOrEmpty(Message))
+                {
+                    if (logger == null)
+                    {
+                        return GetModalOk(Message);
+                    }
+                    else
+                    {
+                        logger.Info(Message);
+                    }
+                    return true;
+                }
 
                 return false;
             }
+        }
+
+        #endregion
+
+        #region ModalWindows
+
+        public static bool GetModalOk(string message)
+        {
+            var modalOkWindow = new ModalOKView();
+
+            var vm = new ModalOKViewModel(message);
+            modalOkWindow.DataContext = vm;
+
+            if (modalOkWindow.ShowDialog() == true)
+            {
+                return true;
+            }
+
+            return true;
         }
 
         #endregion

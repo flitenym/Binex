@@ -26,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="View\ModalOKView.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="View\ShowDataTableView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
