@@ -18,18 +18,20 @@ namespace BinexWorkerService
     public class BinanceSell : CronJobService
     {
         private readonly Logger _logger;
+        private readonly bool IsActivated;
 
         public BinanceSell(IScheduleConfig<BinanceSell> config)
             : base(config.CronExpression, config.TimeZoneInfo)
         {
             _logger = LogManager.GetLogger(nameof(BinanceSell));
+            IsActivated = HelperMethods.LicenseVerify(_logger);
         }
 
         #region Overrides
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (HelperMethods.LicenseVerify())
+            if (IsActivated)
             {
                 _logger.Trace($"Запуск службы {nameof(BinanceSell)}");
             }
@@ -42,6 +44,8 @@ namespace BinexWorkerService
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
+            if (!IsActivated) return;
+
             _logger.Trace($"Запуск продажи");
             try
             {
