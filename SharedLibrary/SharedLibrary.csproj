@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LicenseGeneratorLibrary\LicenseGeneratorLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="View\ShowDataTableView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>

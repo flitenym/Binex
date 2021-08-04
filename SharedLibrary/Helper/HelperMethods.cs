@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Xml.Linq;
 using Dapper;
 using NLog;
 using SharedLibrary.AbstractClasses;
@@ -309,6 +310,8 @@ namespace SharedLibrary.Helper
 
         #endregion
 
+        #region Generics
+
         public static T TryGet<T>(this IDictionary<string, object> storage, string key, T defaultValue = default)
         {
             if (storage == null)
@@ -346,12 +349,16 @@ namespace SharedLibrary.Helper
             return result;
         }
 
+        #endregion
+
         public static string GetVersion()
         {
             var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == AppDomain.CurrentDomain.FriendlyName.Replace(".exe", "")) ?? Assembly.GetExecutingAssembly();
 
             return assembly.GetName().Version.ToString();
         }
+
+        #region DB operations by Key
 
         public static async Task UpdateByKeyInDBAsync(string key, string value, Settings settingsData = null)
         {
@@ -386,6 +393,10 @@ namespace SharedLibrary.Helper
             }
         }
 
+        #endregion
+
+        #region Email
+
         public static void SendEmail(string addressFrom, string addressFromName, string addressFromPassword, string addressTo, string subject, string body, bool enableSsl = true, string smtpHost = "smtp.gmail.com", int smtpPort = 587)
         {
             // отправитель - устанавливаем адрес и отображаемое в письме имя
@@ -407,5 +418,45 @@ namespace SharedLibrary.Helper
             smtp.EnableSsl = enableSsl;
             smtp.Send(m);
         }
+
+        #endregion
+
+        #region License
+
+        public static bool LicenseVerify()
+        {
+            string[] files = System.IO.Directory.GetFiles(Environment.CurrentDirectory, "*.lic");
+
+            if (files.Length == 0)
+            {
+                //TODO создать окно красивое для показа инфы по лицензии
+                //throw new ApplicationException($"Ваша копия программы не лицензирована! Не найден файл лицензии с расширением \".lic\". Обратитесь к автору.");
+                return false;
+            }
+
+            XDocument doc = XDocument.Load(files.First());
+
+            (bool isValid, DateTime startDate, string endDate, string userName, string productName, string Message) = LicenseGenerator.License.IsValidLicense(doc);
+
+            if (isValid)
+            {
+                if (string.IsNullOrEmpty(Message))
+                {
+                    return true;
+                }
+
+                //TODO создать окно красивое для показа инфы по лицензии
+
+                return true;
+            }
+            else
+            {
+                //TODO создать окно красивое для показа инфы по лицензии
+
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binex", "Binex\Binex.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGenerator", "LicenseGenerator\LicenseGenerator.csproj", "{EF46F018-8529-4F74-A69E-80D970DD88F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinexWorkerService", "BinexWorkerService\BinexWorkerService.csproj", "{AA059209-464F-499F-9D05-147EA4EF413C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BinexWorkerService", "BinexWorkerService\BinexWorkerService.csproj", "{AA059209-464F-499F-9D05-147EA4EF413C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseGeneratorLibrary", "LicenseGeneratorLibrary\LicenseGeneratorLibrary.csproj", "{697BE6FA-7EEC-42D7-B61B-57BCEB00D1CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{AA059209-464F-499F-9D05-147EA4EF413C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA059209-464F-499F-9D05-147EA4EF413C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA059209-464F-499F-9D05-147EA4EF413C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{697BE6FA-7EEC-42D7-B61B-57BCEB00D1CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{697BE6FA-7EEC-42D7-B61B-57BCEB00D1CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{697BE6FA-7EEC-42D7-B61B-57BCEB00D1CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{697BE6FA-7EEC-42D7-B61B-57BCEB00D1CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -27,10 +27,17 @@ namespace BinexWorkerService
 
         #region Overrides
 
-        public override Task StartAsync(CancellationToken cancellationToken)
+        public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.Trace($"Запуск службы {nameof(BinanceSell)}");
-            return base.StartAsync(cancellationToken);
+            if (HelperMethods.LicenseVerify())
+            {
+                _logger.Trace($"Запуск службы {nameof(BinanceSell)}");
+            }
+            else
+            {
+                _logger.Trace($"Нет лицензии");
+                await base.StopAsync(cancellationToken);
+            }
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)

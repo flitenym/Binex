@@ -1,4 +1,5 @@
-﻿using SharedLibrary.AbstractClasses;
+﻿using LicenseGenerator;
+using SharedLibrary.AbstractClasses;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.Provider;
@@ -7,11 +8,9 @@ using SharedLibrary.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace SharedLibrary
 {
@@ -26,53 +25,17 @@ namespace SharedLibrary
             e.Handled = true;
         }
 
-        public static bool LicenseVerify()
-        {
-            string path = System.IO.Path.Combine(Environment.CurrentDirectory, "license.xml");
-            if (!System.IO.File.Exists(path))
-            {
-                throw new ApplicationException($"Ваша копия программы не лицензирована! Не найден файл лицензии License.xml. Обратитесь к автору.");
-            }
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path);
-            try
-            {
-                string Name = doc.ChildNodes[0].SelectSingleNode(@"/license/Name", null).InnerText;
-                string Date = doc.ChildNodes[0].SelectSingleNode(@"/license/Date", null).InnerText;
-                string signature = doc.ChildNodes[0].SelectSingleNode(@"/license/Signature", null).InnerText;
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(Name + Date +
-                        "B37F00E131967D5888350F2307D26FEA9EA86A451C816C3C1E221DD476279EB3D5CC57B28C85AE8662B379C30545F84CBD4262D6DFB7653B8939D6D28D14D3C4");
-                byte[] hash = md5.ComputeHash(data);
-                var sigResult = Convert.ToBase64String(hash);
-
-                if (sigResult != signature)
-                {
-                    throw new ApplicationException($"Ваша копия программы не лицензирована! Ошибка чтения файла лицензии.");
-                }
-                if (DateTime.Now > Convert.ToDateTime(Date))
-                {
-                    throw new ApplicationException($"Ваша копия программы не лицензирована! Закончилось время лицензии.");
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                throw new ApplicationException($"Ваша копия программы не лицензирована! Закончилось время лицензии.");
-            }
-        }
-
         public static void Start(object sender, StartupEventArgs e)
         {
             var splashScreen = new SplashScreenWindowView();
             Application.Current.MainWindow = splashScreen;
             splashScreen.Show();
 
-            //if (!LicenseVerify())
-            //{
-            //    return;
-            //}
+            if (!HelperMethods.LicenseVerify())
+            {
+                splashScreen.Close();
+                return;
+            }
 
             Application.Current.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
