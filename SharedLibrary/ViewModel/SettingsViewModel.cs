@@ -376,7 +376,25 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 string startProgramm = $@"start /D ""{ProgramFolderWithFilePath}\"" {CurrentProgramm}.exe"; //запуск программы
                 string removeTempFolder = $@"powershell Remove-Item {TempFolderPath} -Recurse -Force"; //удалим временную папку куда шла разархивация
 
-                pc.StartInfo.Arguments = $"{cdC} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout}  && {startProgramm} && {removeTempFolder}";
+                bool licenseBackup = true;
+                string licenseBackupCmd = string.Empty;
+                string licenseRestoreCmd = string.Empty;
+                if (licenseBackup)
+                {
+                    licenseBackupCmd = $@" && powershell Copy-Item ""{ProgramFolderWithFilePath}\*.lic"" -Destination ""{TempFolderPath}""";
+                    licenseRestoreCmd = $@" && powershell Copy-Item ""{TempFolderPath}\*.lic"" -Destination ""{ProgramFolderWithFilePath}""";
+                }
+
+                bool dataBaseBackup = true;
+                string dataBaseBackupCmd = string.Empty;
+                string dataBaseRestoreCmd = string.Empty;
+                if (dataBaseBackup)
+                {
+                    dataBaseBackupCmd = $@" && powershell Copy-Item ""{ProgramFolderWithFilePath}\*.db"" -Destination ""{TempFolderPath}""";
+                    dataBaseRestoreCmd = $@" && powershell Copy-Item ""{TempFolderPath}\*.db"" -Destination ""{ProgramFolderWithFilePath}""";
+                }
+
+                pc.StartInfo.Arguments = $"{cdC} {licenseBackupCmd} {dataBaseBackupCmd} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout} {licenseBackupCmd} {dataBaseBackupCmd} && {startProgramm} && {removeTempFolder}";
                 pc.Start();
 
                 await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
