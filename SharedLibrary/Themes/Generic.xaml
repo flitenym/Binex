@@ -371,11 +371,11 @@
                 <ControlTemplate TargetType="{x:Type ScrollViewer}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
+                            <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="14" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition />
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="14" />
                         </Grid.RowDefinitions>
                         <ScrollContentPresenter />
@@ -383,22 +383,23 @@
                             x:Name="PART_VerticalScrollBar"
                             Grid.Row="0"
                             Grid.Column="1"
+                            Minimum="0.0"
                             Maximum="{TemplateBinding ScrollableHeight}"
                             Style="{StaticResource ScrollBarStyle}"
                             ViewportSize="{TemplateBinding ViewportHeight}"
                             Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                            Value="{TemplateBinding VerticalOffset}" />
+                            Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=VerticalOffset, Mode=OneWay}" />
                         <ScrollBar
                             x:Name="PART_HorizontalScrollBar"
                             Grid.Row="1"
                             Grid.Column="0"
-                            MinHeight="0"
+                            Minimum="0.0"
                             Maximum="{TemplateBinding ScrollableWidth}"
                             Orientation="Horizontal"
                             Style="{StaticResource ScrollBarStyle}"
                             ViewportSize="{TemplateBinding ViewportWidth}"
                             Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                            Value="{TemplateBinding HorizontalOffset}" />
+                            Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=HorizontalOffset, Mode=OneWay}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -638,6 +639,8 @@
             <Style BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="{x:Type DataGridColumnHeader}">
                 <Setter Property="Background" Value="{DynamicResource DataGridBackground}" />
                 <Setter Property="Foreground" Value="{DynamicResource DataGridForeground}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{DynamicResource DataGridForeground}" />
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
