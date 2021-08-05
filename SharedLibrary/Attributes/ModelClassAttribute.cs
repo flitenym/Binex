@@ -13,5 +13,6 @@ namespace SharedLibrary.Helper.Attributes
         public bool CanUpdate { get; set; } = true;
         public bool CanLoad { get; set; } = true;
         public bool IsVisible { get; set; } = true;
+        public int Order { get; set; }
     }
 }

@@ -43,14 +43,17 @@ namespace SharedLibrary.ViewModel
             models.ForEach(x => x.SetCanUpdate(GetModelCanUpdateAttribute(x)));
             models.ForEach(x => x.SetCanLoad(GetModelCanLoadAttribute(x)));
             models.ForEach(x => x.SetIsVisible(GetModelIsVisibleAttribute(x)));
-
-            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true).OrderBy(x=>x.Title));
+            models.ForEach(x => x.Order = GetModelOrderAttribute(x));
+            
+            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true).OrderBy(x=>x.Order));
 
             FilterCollection = new CollectionViewSource
             {
                 Source = DatabaseModelsData
             };
             FilterCollection.Filter += FilterCollection_Filter;
+
+            throw new ApplicationException("Пиздарики");
 
             SelectedModel = DatabaseModelsData.FirstOrDefault();
         }
@@ -299,6 +302,17 @@ namespace SharedLibrary.ViewModel
                 return myAttribute.IsVisible;
             }
             return true;
+        }
+
+        private int GetModelOrderAttribute(object model)
+        {
+            var customAttributes = (ModelClassAttribute[])model.GetType().GetCustomAttributes(typeof(ModelClassAttribute), true);
+            if (customAttributes.Length > 0)
+            {
+                var myAttribute = customAttributes[0];
+                return myAttribute.Order;
+            }
+            return int.MaxValue;
         }
 
         #endregion

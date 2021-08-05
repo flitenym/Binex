@@ -8,6 +8,9 @@ namespace SharedLibrary.AbstractClasses
         [ColumnData(ShowInTable = false)]
         public string Title { get; set; }
 
+        [ColumnData(ShowInTable = false)]
+        public int Order { get; set; }
+
         #region IsVisible
 
         private bool IsVisible { get; set; }
