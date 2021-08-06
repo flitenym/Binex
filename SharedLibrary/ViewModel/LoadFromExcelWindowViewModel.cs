@@ -117,7 +117,6 @@ $@"При загрузке из Excel следует придерживатьс�
                 {
                     for (int i = 0; i < listObj.Count; i++)
                     {
-
                         var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
                         var objAgentEarnBtc = (decimal?)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
                         if (objAgentEarnBtc != null)
@@ -139,7 +138,6 @@ $@"При загрузке из Excel следует придерживатьс�
                 {
                     for (int i = 0; i < listObj.Count; i++)
                     {
-
                         var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
                         var objAgentEarnBtc = (decimal?)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
                         if (objAgentEarnBtc != null)

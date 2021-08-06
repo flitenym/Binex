@@ -13,6 +13,7 @@
     Width="1024"
     Height="720"
     FontSize="14"
+    Title="Binex"
     Foreground="{DynamicResource WindowForeground}" 
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">

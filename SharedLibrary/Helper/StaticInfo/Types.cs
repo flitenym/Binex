@@ -16,7 +16,7 @@ namespace SharedLibrary.Helper.StaticInfo
 
             #region Главное меню
 
-            public static ViewInfo MainMenu = new ViewInfo { Name = "Главное меню", View = new Guid("C7ECA40A-DACF-4524-B0F7-443860448FFA"), Num = 0, ModelClass = ModelBaseClasses.Main };
+            public static ViewInfo MainMenu = new ViewInfo { Name = "Главное меню Binex", View = new Guid("C7ECA40A-DACF-4524-B0F7-443860448FFA"), Num = 0, ModelClass = ModelBaseClasses.Main };
 
             #endregion
 

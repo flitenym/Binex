@@ -8,6 +8,6 @@ namespace SharedLibrary.ViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        public string AppVersion => "Version: " + HelperMethods.GetVersion();  
+        public string AppVersion => HelperMethods.GetVersion();  
     }
 }
