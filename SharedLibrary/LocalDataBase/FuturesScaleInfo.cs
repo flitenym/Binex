@@ -4,7 +4,7 @@ using SharedLibrary.Helper.Attributes;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "Линейка Фьючерс", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true, Order = 5)]
+    [ModelClass(TableTitle = "Линейка Фьючерс", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true, Order = 4)]
     public class FuturesScaleInfo : ModelClass
     {
         [ColumnData(ShowInTable = false)]

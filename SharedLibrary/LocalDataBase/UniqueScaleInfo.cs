@@ -4,7 +4,7 @@ using SharedLibrary.Helper.Attributes;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "Линейка для уникальных Спот", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true, Order = 4)]
+    [ModelClass(TableTitle = "Линейка для уникальных Спот", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true, Order = 5)]
     public class UniqueScaleInfo : ModelClass
     {
         [ColumnData(ShowInTable = false)]

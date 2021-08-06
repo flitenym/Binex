@@ -210,7 +210,7 @@ namespace SharedLibrary.ViewModel
             }
             else
             {
-                SelectedTheme = themes.FirstOrDefault(x => x.ThemeClass == ThemeBaseClasses.GeneralTheme);
+                SelectedTheme = themes.OrderBy(x => x.Num).FirstOrDefault(x => x.ThemeClass == ThemeBaseClasses.GeneralTheme);
                 selectedThemeData = new Settings() { Name = InfoKeys.SelectedThemeKey, Value = SelectedTheme.Name };
                 await SQLExecutor.InsertExecutorAsync(selectedThemeData, selectedThemeData);
             }
@@ -228,7 +228,7 @@ namespace SharedLibrary.ViewModel
             }
             else
             {
-                SelectedThemeDarkOrLight = themes.FirstOrDefault(x => x.ThemeClass == ThemeBaseClasses.GlobalTheme);
+                SelectedThemeDarkOrLight = themes.OrderBy(x => x.Num).FirstOrDefault(x => x.ThemeClass == ThemeBaseClasses.GlobalTheme);
                 selectedThemeDarkOrLightData = new Settings() { Name = InfoKeys.SelectedThemeDarkOrLightKey, Value = SelectedThemeDarkOrLight.Name };
                 await SQLExecutor.InsertExecutorAsync(selectedThemeDarkOrLightData, selectedThemeDarkOrLightData);
             }

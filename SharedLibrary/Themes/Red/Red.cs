@@ -8,7 +8,7 @@ namespace SharedLibrary.Themes.Red
         public override string Title => "Красная тема"; 
         public override string Name => nameof(Red);
         public override string UriPath => @"/SharedLibrary;component/Themes/Red/Red.xaml";
-        public override int Num => 3;
+        public override int Num => 1;
         public override ThemeBaseClasses ThemeClass => ThemeBaseClasses.GeneralTheme;
     }
 }

@@ -9,7 +9,10 @@ using SharedLibrary.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 
@@ -226,6 +229,20 @@ namespace Binex.ViewModel
 
         #endregion
 
+        /// <summary>
+        /// Получение пути исполняемого файла
+        /// </summary>
+        public string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         #endregion
 
         #region Команда для получение Email данных
@@ -256,15 +273,15 @@ namespace Binex.ViewModel
 
         public async Task<bool> RestartService(string serviceName, int timeoutMilliseconds)
         {
-            ServiceController service = new ServiceController(serviceName);
-            if (service?.Status == null)
-            {
-                await HelperMethods.Message($"Сервис не найден {serviceName}");
-                return false;
-            }
-
             try
             {
+                ServiceController service = new ServiceController(serviceName);
+                if (service?.Status == null)
+                {
+                    await HelperMethods.Message($"Сервис не найден {serviceName}");
+                    return false;
+                }
+
                 int millisec1 = Environment.TickCount;
                 TimeSpan timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
                 if (service.Status != ServiceControllerStatus.Stopped)
@@ -286,7 +303,18 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                if (ex.Message.Contains("was not found"))
+                {
+                    await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
+                }
+                else if (ex.Message.Contains("Cannot open"))
+                {
+                    await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
+                }
+                else
+                {
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                }
                 return false;
             }
         }
@@ -393,6 +421,174 @@ namespace Binex.ViewModel
             showDataTable.ShowDialog();
         }
 
+        #endregion
+
+        #region Команда для установки сервиса
+
+        private AsyncCommand installServiceCommand;
+
+        public AsyncCommand InstallServiceCommand => installServiceCommand ?? (installServiceCommand = new AsyncCommand(x => InstallServiceAsync()));
+
+        private async Task InstallServiceAsync()
+        {
+            try
+            {
+                Process pc = new Process();
+                pc.StartInfo.FileName = "cmd.exe";
+
+                string cdC = $@"/C cd C:\\";//подключимся к диску С
+                string timeout = $@"timeout /t 1"; //ожидание
+                string installService = $@"sc create {BinexServiceName} binPath={AssemblyDirectory}\BinexWorkerService.exe";
+                string startService = $@"net start ""{BinexServiceName}""";
+
+                pc.StartInfo.Arguments = $"{cdC} && {timeout} && {installService} && {startService}";
+                pc.Start();
+            }
+            catch (Exception ex)
+            {
+                await HelperMethods.Message(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Команда для удаления сервиса
+
+        private AsyncCommand uninstallServiceCommand;
+
+        public AsyncCommand UninstallServiceCommand => uninstallServiceCommand ?? (uninstallServiceCommand = new AsyncCommand(x => UninstallServiceAsync()));
+
+        private async Task UninstallServiceAsync()
+        {
+            try
+            {
+                Process pc = new Process();
+                pc.StartInfo.FileName = "cmd.exe";
+
+                string cdC = $@"/C cd C:\\";//подключимся к диску С
+                string timeout = $@"timeout /t 1"; //ожидание
+                string uninstallService = $@"sc delete {BinexServiceName}";
+
+                pc.StartInfo.Arguments = $"{cdC} && {timeout} && {uninstallService}";
+                pc.Start();
+            }
+            catch (Exception ex)
+            {
+                await HelperMethods.Message(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Команда для перезагрузки сервиса
+
+        private AsyncCommand restartServiceCommand;
+
+        public AsyncCommand RestartServiceCommand => restartServiceCommand ?? (restartServiceCommand = new AsyncCommand(x => RestartServiceAsync()));
+
+        private async Task RestartServiceAsync()
+        {
+            try
+            {
+                await RestartService(BinexServiceName, 2000);
+            }
+            catch (Exception ex)
+            {
+                await HelperMethods.Message(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Команда для запуска сервиса
+
+        private AsyncCommand startServiceCommand;
+
+        public AsyncCommand StartServiceCommand => startServiceCommand ?? (startServiceCommand = new AsyncCommand(x => StartServiceAsync()));
+
+        private async Task<bool> StartServiceAsync()
+        {
+            try
+            {
+                ServiceController service = new ServiceController(BinexServiceName);
+                if (service?.Status == null)
+                {
+                    await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
+                    return false;
+                }
+
+                var timeout = TimeSpan.FromMilliseconds(2000);
+                if (service.Status != ServiceControllerStatus.Running)
+                {
+                    service.Start();
+                    service.WaitForStatus(ServiceControllerStatus.Running, timeout);
+                }
+                await HelperMethods.Message($"Сервис запущен {BinexServiceName}");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("was not found"))
+                {
+                    await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
+                }
+                else if (ex.Message.Contains("Cannot open"))
+                {
+                    await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
+                }
+                else
+                {
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                }
+                return false;
+            }
+        }
+        #endregion
+
+        #region Команда для остановки сервиса
+
+        private AsyncCommand stopServiceCommand;
+
+        public AsyncCommand StopServiceCommand => stopServiceCommand ?? (stopServiceCommand = new AsyncCommand(x => StopServiceAsync()));
+
+        private async Task<bool> StopServiceAsync()
+        {
+            try
+            {
+                ServiceController service = new ServiceController(BinexServiceName);
+                if (service?.Status == null)
+                {
+                    await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
+                    return false;
+                }
+
+                int millisec1 = Environment.TickCount;
+                TimeSpan timeout = TimeSpan.FromMilliseconds(2000);
+                if (service.Status != ServiceControllerStatus.Stopped)
+                {
+                    service.Stop();
+                    service.WaitForStatus(ServiceControllerStatus.Stopped, timeout);
+                }
+
+                await HelperMethods.Message($"Сервис остановлен {BinexServiceName}");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("was not found"))
+                {
+                    await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
+                }
+                else if (ex.Message.Contains("Cannot open"))
+                {
+                    await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
+                }
+                else
+                {
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                }
+                return false;
+            }
+        }
         #endregion
     }
 }

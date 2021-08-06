@@ -434,70 +434,86 @@ namespace SharedLibrary.Helper
 
         public static bool LicenseVerify(Logger logger = null)
         {
-            string[] files = System.IO.Directory.GetFiles(Environment.CurrentDirectory, "*.lic");
+            try
+            {
+                string[] files = System.IO.Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.lic");
 
-            if (files.Length == 0)
+                if (files.Length == 0)
+                {
+                    if (logger == null)
+                    {
+                        GetModalOk("Не найдена лицензия .lic");
+                    }
+                    else
+                    {
+                        logger.Info("Не найдена лицензия .lic");
+                    }
+
+                    return false;
+                }
+
+                XDocument doc = XDocument.Load(files.First());
+
+                (bool isValid, DateTime startDate, string endDate, string userName, string productName, string Message) = LicenseGenerator.License.IsValidLicense(doc);
+
+                if (isValid)
+                {
+                    string licenseInfo = string.Empty;
+
+                    if (!string.IsNullOrEmpty(Message))
+                    {
+                        licenseInfo = Message;
+                    }
+                    else
+                    {
+                        licenseInfo = $"Лицензия активна до {endDate}";
+                    }
+                    SharedProvider.SetToSingleton(InfoKeys.CompanyNameKey, productName);
+                    SharedProvider.SetToSingleton(InfoKeys.DirectorNameKey, userName);
+                    SharedProvider.SetToSingleton(InfoKeys.LicenseInfoKey, licenseInfo);
+
+                    if (!string.IsNullOrEmpty(Message))
+                    {
+                        if (logger == null)
+                        {
+                            GetModalOk(licenseInfo);
+                        }
+                        else
+                        {
+                            logger.Info(Message);
+                        }
+                        return true;
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(Message))
+                    {
+                        if (logger == null)
+                        {
+                            GetModalOk(Message);
+                        }
+                        else
+                        {
+                            logger.Info(Message);
+                        }
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+            catch (Exception ex)
             {
                 if (logger == null)
                 {
-                    GetModalOk("Не найдена лицензия .lic");
+                    GetModalOk($"Ошибка: {ex.Message}");
                 }
                 else
                 {
-                    logger.Info("Не найдена лицензия .lic");
-                }
-                
-                return false;
-            }
-
-            XDocument doc = XDocument.Load(files.First());
-
-            (bool isValid, DateTime startDate, string endDate, string userName, string productName, string Message) = LicenseGenerator.License.IsValidLicense(doc);
-
-            if (isValid)
-            {
-                string licenseInfo = string.Empty;
-
-                if (!string.IsNullOrEmpty(Message))
-                {
-                    licenseInfo = Message;
-                }
-                else
-                {
-                    licenseInfo = $"Лицензия активна до {endDate}";
-                }
-                SharedProvider.SetToSingleton(InfoKeys.CompanyNameKey, productName);
-                SharedProvider.SetToSingleton(InfoKeys.DirectorNameKey, userName);
-                SharedProvider.SetToSingleton(InfoKeys.LicenseInfoKey, licenseInfo);
-
-                if (!string.IsNullOrEmpty(Message))
-                {
-                    if (logger == null)
-                    {
-                        GetModalOk(licenseInfo);
-                    }
-                    else
-                    {
-                        logger.Info(Message);
-                    }
-                    return true;
-                }
-
-                return true;
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(Message))
-                {
-                    if (logger == null)
-                    {
-                        GetModalOk(Message);
-                    }
-                    else
-                    {
-                        logger.Info(Message);
-                    }
-                    return true;
+                    logger.Info($"Ошибка: {ex.Message}");
                 }
 
                 return false;

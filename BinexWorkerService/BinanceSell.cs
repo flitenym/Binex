@@ -135,6 +135,8 @@ namespace BinexWorkerService
 
             #endregion
 
+            return false;
+
             List<CurrencyInfo> currenciesInfo = new List<CurrencyInfo>();
 
             #region Перевод USDT из Фьючерс в Спот
