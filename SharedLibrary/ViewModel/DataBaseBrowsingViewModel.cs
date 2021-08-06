@@ -53,8 +53,6 @@ namespace SharedLibrary.ViewModel
             };
             FilterCollection.Filter += FilterCollection_Filter;
 
-            throw new ApplicationException("Пиздарики");
-
             SelectedModel = DatabaseModelsData.FirstOrDefault();
         }
 

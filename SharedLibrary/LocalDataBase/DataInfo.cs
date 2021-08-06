@@ -4,34 +4,41 @@ using SharedLibrary.Helper.Attributes;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "Данные Спот", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true)]
+    [ModelClass(TableTitle = "Данные Спот", IsVisible = true, CanDelete = true, CanInsert = false, CanUpdate = false, CanLoad = true, Order = 1)]
     public class DataInfo : ModelClass
     {
-        [ColumnData(ShowInTable = false)]
+        [ColumnData(ShowInTable = false, IsReadOnly = true)]
         public int ID { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("Тип аккаунта")]
         public string AccountType { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("Идентификатор пользователя")]
         public string UserID { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("BTC")]
         public decimal AgentEarnBtc { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("USDT")]
         public decimal AgentEarnUsdt { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("Был трейдинг")]
         public string HasTrading { get; set; }
 
-        [Description("Счет аккаунта больше 1$")]
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
+        [Description("Счет больше 1$")]
         public string AccountBalance { get; set; }
 
+        [ColumnData(IsReadOnly = true, IsNullable = false)]
         [Description("Дата приглашения")]
         public string InviteTime { get; set; }
 
-        [ColumnData(ShowInTable = false)]
+        [ColumnData(ShowInTable = false, IsReadOnly = true, IsNullable = false)]
         [Description("Бонус")]
         public string TotalReferralBonusEarn { get; set; }
 

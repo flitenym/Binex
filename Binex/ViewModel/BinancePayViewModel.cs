@@ -111,6 +111,7 @@ namespace Binex.ViewModel
         private async Task<List<PayInfo>> GetResultPaysInfo(string dataInfoTableName, string scaleTableName, double settingsPercent, double defaultPercent)
         {
             var scale = await SQLExecutor.SelectExecutorAsync<Scale>(scaleTableName, "order by FromValue desc");
+            var uniqueScale = await SQLExecutor.SelectExecutorAsync<Scale>($"Unique{scaleTableName}", "order by FromValue desc");
 
             var paysInfo = await SQLExecutor.SelectExecutorAsync<PayInfo>($@"
 WITH VarTable AS (
@@ -157,7 +158,19 @@ GROUP BY UserID
                     payInfoData.AgentEarnUsdt = Math.Abs(first.AgentEarnUsdt - lastUsdt);
 
                     var hungPercent = (double)payInfoData.AgentEarnUsdt / settingsPercent * 100;
-                    var percent = string.IsNullOrEmpty(payInfo.IsUnique?.Trim()) ? (scale.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? defaultPercent) / 100 : settingsPercent / 100;
+
+                    double percent;
+
+                    if (string.IsNullOrEmpty(payInfo.IsUnique?.Trim()))
+                    {
+                        percent = scale.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? defaultPercent;
+                    }
+                    else
+                    {
+                        percent = uniqueScale.FirstOrDefault(x => x.FromValue <= hungPercent)?.Percent ?? defaultPercent;
+                    }
+
+                    percent /= 100;
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
 

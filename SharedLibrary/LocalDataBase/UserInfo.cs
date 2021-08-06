@@ -6,7 +6,7 @@ using SharedLibrary.Helper.StaticInfo;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "Пользователи", IsVisible = true, CanDelete = true, CanInsert = true, CanUpdate = true, CanLoad = true)]
+    [ModelClass(TableTitle = "Пользователи", IsVisible = true, CanDelete = true, CanInsert = false, CanUpdate = true, CanLoad = false, Order = 7)]
     public class UserInfo : ModelClass
     {
         [ColumnData(ShowInTable = false)]
