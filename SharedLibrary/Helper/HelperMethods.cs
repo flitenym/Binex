@@ -196,7 +196,7 @@ namespace SharedLibrary.Helper
             for (int i = 0; i < properties.Length; i++)
             {
                 object value;
-                var databaseType = properties[i].Name.GetType();
+                var databaseType = properties[i].PropertyType;
 
                 (bool isHaveDefault, object defaultValue) = GetDefaultValue(properties[i], DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
 
@@ -237,6 +237,10 @@ namespace SharedLibrary.Helper
                         if (!databaseType.Equals(excelType) && databaseType.Equals(typeof(System.String)))
                         {
                             value = row[columnName].ToString();
+                        }
+                        else if (databaseType.Equals(typeof(System.Decimal)) && decimal.TryParse(row[columnName].ToString().Replace(",", "").Replace('.', ','), out var decimalValue))
+                        {
+                            value = decimalValue;
                         }
                         else
                         {

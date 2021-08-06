@@ -103,6 +103,61 @@ $@"При загрузке из Excel следует придерживатьс�
             window.DialogResult = true;
         }
 
+        /// <summary>
+        /// Проверим загружаемые данные
+        /// </summary>
+        /// <returns></returns>
+        private async Task<bool> CheckMinimumBeforeAsync(List<object> listObj)
+        {
+            string tableName = string.Empty;
+            if (modelClassItem is DataInfo)
+            {
+                var dataInfos = await SQLExecutor.SelectExecutorAsync<DataInfo>(nameof(DataInfo), $"WHERE LoadingDateTime = (SELECT di.LoadingDateTime FROM {nameof(DataInfo)} di ORDER BY di.LoadingDateTime DESC LIMIT 1)");
+                if (dataInfos.Any())
+                {
+                    for (int i = 0; i < listObj.Count; i++)
+                    {
+
+                        var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
+                        var objAgentEarnBtc = (decimal?)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
+                        if (objAgentEarnBtc != null)
+                        {
+                            var objLikeInDataInfo = dataInfos.FirstOrDefault(x => x.UserID == objUserID && x.AgentEarnBtc > objAgentEarnBtc);
+                            if (objLikeInDataInfo != null)
+                            {
+                                await HelperMethods.Message($"Данные не загружены. UserID {objUserID} было {objLikeInDataInfo.AgentEarnBtc} стало {objAgentEarnBtc}");
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (modelClassItem is FuturesDataInfo)
+            {
+                var dataInfos = await SQLExecutor.SelectExecutorAsync<FuturesDataInfo>(nameof(FuturesDataInfo), $"WHERE LoadingDateTime = (SELECT di.LoadingDateTime FROM {nameof(FuturesDataInfo)} di ORDER BY di.LoadingDateTime DESC LIMIT 1)");
+                if (dataInfos.Any())
+                {
+                    for (int i = 0; i < listObj.Count; i++)
+                    {
+
+                        var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
+                        var objAgentEarnBtc = (decimal?)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
+                        if (objAgentEarnBtc != null)
+                        {
+                            var objLikeInDataInfo = dataInfos.FirstOrDefault(x => x.UserID == objUserID && x.AgentEarnBtc > objAgentEarnBtc);
+                            if (objLikeInDataInfo != null)
+                            {
+                                await HelperMethods.Message($"Данные не загружены. UserID {objUserID} было {objLikeInDataInfo.AgentEarnBtc} стало {objAgentEarnBtc}");
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public async Task LoadAsync()
         {
             try
@@ -129,28 +184,9 @@ $@"При загрузке из Excel следует придерживатьс�
                 {
                     // в случае если у нас таблица Данные, то нам нужно проверить BTC
                     // если BTC у нас по новым данным для загрузки
-                    if (modelClassItem is DataInfo)
+                    if (!await CheckMinimumBeforeAsync(listObj))
                     {
-                        // загрузим из локальной БД предыдущие данные
-                        var dataInfos = await SQLExecutor.SelectExecutorAsync<DataInfo>(nameof(DataInfo), "WHERE LoadingDateTime = (SELECT di.LoadingDateTime FROM DataInfo di ORDER BY di.LoadingDateTime DESC LIMIT 1)");
-                        if (dataInfos.Any())
-                        {
-                            for (int i = 0; i < listObj.Count; i++)
-                            {
-
-                                var objUserID = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "UserID").Value;
-                                var objAgentEarnBtc = (string)((ExpandoObject)listObj[i]).FirstOrDefault(x => x.Key == "AgentEarnBtc").Value;
-                                if (objAgentEarnBtc != null && decimal.TryParse(objAgentEarnBtc.Replace(",","").Replace('.', ','), out var objAgentEarnBtcDecimal))
-                                {
-                                    var objLikeInDataInfo = dataInfos.FirstOrDefault(x => x.UserID == objUserID && x.AgentEarnBtc > objAgentEarnBtcDecimal);
-                                    if (objLikeInDataInfo != null)
-                                    {
-                                        await HelperMethods.Message($"Данные не загружены. UserID {objUserID} было {objLikeInDataInfo.AgentEarnBtc} стало {objAgentEarnBtcDecimal}");
-                                        return;
-                                    }
-                                }
-                            }
-                        }
+                        return;
                     }
 
                     await HelperMethods.Message($"Найдено {listObj.Count} строк, выполняется загрузка в БД");
