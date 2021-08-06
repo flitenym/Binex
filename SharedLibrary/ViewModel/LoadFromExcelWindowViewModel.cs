@@ -158,6 +158,39 @@ $@"При загрузке из Excel следует придерживатьс�
             return true;
         }
 
+        /// <summary>
+        /// Метод, позволяющий делать только 2 итерации загрузки
+        /// </summary>
+        /// <returns></returns>
+        private async Task DeleteBeforeDataAsync()
+        {
+            string tableName = string.Empty;
+            if (modelClassItem is DataInfo)
+            {
+                await SQLExecutor.QueryExecutorAsync($@"
+DELETE FROM {nameof(DataInfo)}
+WHERE LoadingDateTime not in (
+	SELECT LoadingDateTime from {nameof(DataInfo)}
+	GROUP BY LoadingDateTime
+	ORDER BY LoadingDateTime DESC
+	LIMIT(2)
+)
+");
+            }
+            else if (modelClassItem is FuturesDataInfo)
+            {
+                await SQLExecutor.QueryExecutorAsync($@"
+DELETE FROM {nameof(FuturesDataInfo)}
+WHERE LoadingDateTime not in (
+	SELECT LoadingDateTime from {nameof(FuturesDataInfo)}
+	GROUP BY LoadingDateTime
+	ORDER BY LoadingDateTime DESC
+	LIMIT(2)
+)
+");
+            }
+        }
+
         public async Task LoadAsync()
         {
             try
@@ -194,6 +227,8 @@ $@"При загрузке из Excel следует придерживатьс�
                     {
                         await SQLExecutor.InsertExecutorAsync(modelClassItem, listObj[i]);
                     }
+
+                    await DeleteBeforeDataAsync();
                 }
                 else
                 {
