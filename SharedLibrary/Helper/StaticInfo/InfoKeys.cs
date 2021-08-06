@@ -23,6 +23,12 @@
 
         public static string BinexServiceNameKey = "BinexServiceName";
 
+        public static string IsCurrenciesSellKey = "IsCurrenciesSell";
+
+        public static string IsDustSellKey = "IsDustSell";
+
+        public static string IsTransferFromFuturesToSpotKey = "IsTransferFromFuturesToSpot";
+
         #endregion
 
         #region Ключи для карточки Singleton

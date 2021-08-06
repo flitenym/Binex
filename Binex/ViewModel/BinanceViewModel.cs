@@ -180,7 +180,52 @@ namespace Binex.ViewModel
         }
 
         #endregion
-        
+
+        #region IsCurrenciesSell
+
+        private bool isCurrenciesSell = true;
+        public bool IsCurrenciesSell
+        {
+            get { return isCurrenciesSell; }
+            set
+            {
+                isCurrenciesSell = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsCurrenciesSell)));
+            }
+        }
+
+        #endregion
+
+        #region IsTransferFromFuturesToSpot
+
+        private bool isTransferFromFuturesToSpot = true;
+        public bool IsTransferFromFuturesToSpot
+        {
+            get { return isTransferFromFuturesToSpot; }
+            set
+            {
+                isTransferFromFuturesToSpot = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsTransferFromFuturesToSpot)));
+            }
+        }
+
+        #endregion
+
+        #region IsDustSell
+
+        private bool isDustSell = true;
+        public bool IsDustSell
+        {
+            get { return isDustSell; }
+            set
+            {
+                isDustSell = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsDustSell)));
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Команда для получение Email данных
@@ -195,7 +240,10 @@ namespace Binex.ViewModel
             EmailLogin = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailLoginKey))?.Value;
             EmailPassword = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailPasswordKey))?.Value;
             Cron = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.CronKey))?.Value;
-            BinexServiceName = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinexServiceNameKey))?.Value;            
+            BinexServiceName = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinexServiceNameKey))?.Value;
+            IsCurrenciesSell = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsCurrenciesSellKey))?.Value == bool.TrueString;
+            IsDustSell = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsDustSellKey))?.Value == bool.TrueString;
+            IsTransferFromFuturesToSpot = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsTransferFromFuturesToSpotKey))?.Value == bool.TrueString;
         }
 
         #endregion
@@ -270,6 +318,9 @@ namespace Binex.ViewModel
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailsKey, emails);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailLoginKey, emailLogin);
             await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.EmailPasswordKey, emailPassword);
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.IsCurrenciesSellKey, isCurrenciesSell.ToString());
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.IsDustSellKey, isDustSell.ToString());
+            await HelperMethods.UpdateByKeyInDBAsync(InfoKeys.IsTransferFromFuturesToSpotKey, IsTransferFromFuturesToSpot.ToString());
 
             SharedProvider.SetToSingleton(
                     InfoKeys.ApiKeyBinanceKey,
