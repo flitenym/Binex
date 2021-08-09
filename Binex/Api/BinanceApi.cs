@@ -54,7 +54,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -84,7 +84,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesAsync(Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -112,7 +112,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesAsync(string asset, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -287,7 +287,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, BinancePrice Price)> GetPrice(string fromAsset, string toAsset, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -315,7 +315,7 @@ namespace Binex.Api
 
         public static async Task<bool> SellCoinAsync(decimal quantity, string fromAsset, string toAsset = "USDT", Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -343,7 +343,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, decimal? Balance)> GetFuturesUsdtAccountUsdtBalanceAsync(Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger);
 
             if (!apiData.IsSuccess)
             {
@@ -379,14 +379,14 @@ namespace Binex.Api
 
         public static async Task<bool> TransferSpotToUsdtAsync(Logger logger = null)
         {
-            (bool isAccountUsdtSuccess, decimal? balance) = await GetFuturesUsdtAccountUsdtBalanceAsync();
+            (bool isAccountUsdtSuccess, decimal? balance) = await GetFuturesUsdtAccountUsdtBalanceAsync(logger: logger);
 
             if (!isAccountUsdtSuccess)
             {
                 return false;
             }
 
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -414,7 +414,7 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, Dictionary<string, BinanceAssetDetails> AssetDetails)> GetBinanceAssetDetails(Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -442,18 +442,43 @@ namespace Binex.Api
 
         public static async Task<(bool IsSuccess, string Message)> TransferDustAsync(Logger logger = null)
         {
-            (bool isSuccessAssetDetails, Dictionary<string, BinanceAssetDetails> assetDetails) = await GetBinanceAssetDetails(logger);
+            (bool isSuccessAssetDetails, Dictionary<string, BinanceAssetDetails> assetDetails) = await GetBinanceAssetDetails(logger: logger);
 
             if (!isSuccessAssetDetails)
             {
+                if (logger != null)
+                {
+                    logger.Error("Получение основных данных по валютам неудачно");
+                }
                 return (false, null);
             }
+            else
+            {
+                if (logger != null)
+                {
+                    logger.Trace("Получение основных данных по валютам удачно");
+                    logger.Trace($"{string.Join(", ", assetDetails.Select(x=>x.Key + " " + x.Value.MinimalWithdrawAmount))}");
+                }
+            }
 
-            (bool isSuccessGeneralAllCurrencies, List<BinanceBalance> currencies) = await GetGeneralAllCurrenciesAsync(logger);
+            (bool isSuccessGeneralAllCurrencies, List<BinanceBalance> currencies) = await GetGeneralAllCurrenciesAsync(logger: logger);
 
             if (!isSuccessGeneralAllCurrencies)
             {
+                if (logger != null)
+                {
+                    logger.Error("Получение по валютам у пользователя неудачно");
+                }
+
                 return (false, null);
+            }
+            else
+            {
+                if (logger != null)
+                {
+                    logger.Trace("Получение по валютам у пользователя удачно");
+                    logger.Trace($"{string.Join(", ", currencies.Select(x => x.Asset + " " + x.Free))}");
+                }
             }
 
             List<string> assets = new List<string>();
@@ -475,8 +500,15 @@ namespace Binex.Api
                 await HelperMethods.Message(message, logger: logger);
                 return (true, message);
             }
+            else
+            {
+                if (logger != null)
+                {
+                    logger.Trace($"Монеты с маленьким балансом: {string.Join(", ", assets)}");
+                }
+            }
 
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(logger: logger);
 
             if (!apiData.IsSuccess)
             {

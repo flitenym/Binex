@@ -35,7 +35,7 @@ namespace BinexWorkerService
                 _expression = CronExpression.Parse(cron.Value);
             }
 
-           var next = _expression.GetNextOccurrence(DateTimeOffset.Now, _timeZoneInfo);
+            var next = _expression.GetNextOccurrence(DateTimeOffset.Now, _timeZoneInfo);
             if (next.HasValue)
             {
                 var delay = next.Value - DateTimeOffset.Now;
