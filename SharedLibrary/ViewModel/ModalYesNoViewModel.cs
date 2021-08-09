@@ -3,11 +3,11 @@ using System.ComponentModel;
 
 namespace SharedLibrary.ViewModel
 {
-    public class ModalOKViewModel : INotifyPropertyChanged
+    public class ModalYesNoViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        public ModalOKViewModel(string message)
+        public ModalYesNoViewModel(string message)
         {
             Message = message;
         }
@@ -35,14 +35,26 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Команда для закрытия
+        #region Команда Нет
 
-        private RelayCommand okCommand;
-        public RelayCommand OkCommand => okCommand ?? (okCommand = new RelayCommand(obj => CancelFunction(obj)));
+        private RelayCommand noCommand;
+        public RelayCommand NoCommand => noCommand ?? (noCommand = new RelayCommand(obj => NoFunction(obj)));
 
-        public void CancelFunction(object obj)
+        public void NoFunction(object obj)
         {
             (obj as System.Windows.Window).DialogResult = false;
+        }
+
+        #endregion
+
+        #region Команда Да
+
+        private RelayCommand yesCommand;
+        public RelayCommand YesCommand => yesCommand ?? (yesCommand = new RelayCommand(obj => YesFunction(obj)));
+
+        public void YesFunction(object obj)
+        {
+            (obj as System.Windows.Window).DialogResult = true;
         }
 
         #endregion

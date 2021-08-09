@@ -434,6 +434,12 @@ namespace SharedLibrary.ViewModel
 
             IDs.RemoveAll(x => x == -1);
 
+            if (!GetModalYesNo("Удалить строки?"))
+            {
+                await Message("Удаление отменено");
+                return;
+            }
+
             await SQLExecutor.DeleteExecutorAsync(SelectedModelName, IDs);
 
 

@@ -539,6 +539,23 @@ namespace SharedLibrary.Helper
             return true;
         }
 
+        public static bool GetModalYesNo(string message)
+        {
+            var modalYesNoWindow = new ModalYesNoView();
+
+            var vm = new ModalYesNoViewModel(message);
+            modalYesNoWindow.DataContext = vm;
+
+            if (modalYesNoWindow.ShowDialog() == true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
     }
 }
