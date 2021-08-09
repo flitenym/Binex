@@ -4,7 +4,7 @@ using SharedLibrary.Helper.Attributes;
 
 namespace SharedLibrary.LocalDataBase.Models
 {
-    [ModelClass(TableTitle = "История об оплате", IsVisible = true, CanDelete = true, CanInsert = false, CanUpdate = false, CanLoad = false, Order = 8)]
+    [ModelClass(TableTitle = "История оплаты", IsVisible = true, CanDelete = true, CanInsert = false, CanUpdate = false, CanLoad = false, Order = 8)]
     public class PayHistory : ModelClass
     {
         [ColumnData(ShowInTable = false)]

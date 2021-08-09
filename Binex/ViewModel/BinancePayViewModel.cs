@@ -19,7 +19,7 @@ namespace Binex.ViewModel
     public class PayInfo
     {
         public int ID { get; set; }
-        public string UserID { get; set; }
+        public double? UserID { get; set; }
         public decimal AgentEarnBtc { get; set; }
         public decimal AgentEarnUsdt { get; set; }
         public decimal? UsdtToPay { get; set; }
@@ -318,7 +318,7 @@ SET IsPaid = 'Да'
 WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
 ");
 
-                        var payHistory = new PayHistory() { UserID = payInfo.UserID, SendedUsdt = Math.Round(payInfo.UsdtToPay.Value, 4), PayTime = DateTime.Now.ToString(), NumberPay = numberPay };
+                        var payHistory = new PayHistory() { UserID = payInfo.UserID.ToString(), SendedUsdt = Math.Round(payInfo.UsdtToPay.Value, 4), PayTime = DateTime.Now.ToString(), NumberPay = numberPay };
                         await SQLExecutor.InsertExecutorAsync(payHistory, payHistory);
                     }
                 }

@@ -414,13 +414,29 @@ $@"1. Файл должен скачиваться по ссылке из инт
         {
             try
             {
+                // проверим какой метод будем использовать для extract архива
+                string expandArchive = string.Empty;
+                bool isHaveWinrar = File.Exists(@"C:\Program Files\WinRAR\winrar.exe");
+                bool isHaveSevenZip = File.Exists(@"C:\Program Files\7-Zip\7z.exe");
+                if (isHaveWinrar)
+                {
+                    expandArchive = $@"""C:\Program Files\WinRAR\winrar.exe"" x -ibck {TempFolderWithFilePath} *.* {ProgramFolderWithFilePath}";
+                }
+                else if (isHaveSevenZip)
+                {
+                    expandArchive = $@"""C:\Program Files\7-Zip\7z.exe"" x {TempFolderWithFilePath} -o{ProgramFolderWithFilePath}";
+                }
+                else
+                {
+                    expandArchive = $@"powershell Expand-Archive {TempFolderWithFilePath} -DestinationPath {ProgramFolderWithFilePath}";
+                }
+
                 Process pc = new Process();
                 pc.StartInfo.FileName = "cmd.exe";
 
                 string cdC = $@"/C cd C:\\";//подключимся к диску С
                 string timeout = $@"timeout /t 1"; //ожидание
                 string removeProgramFolderWithFilePath = $@"powershell Remove-Item {ProgramFolderWithFilePath}\\* -Recurse -Force"; //удалим текущую папку где существует exe, по сути откуда сейчас работаем
-                string expandArchive = $@"powershell Expand-Archive {TempFolderWithFilePath} -DestinationPath {ProgramFolderWithFilePath}"; //разархивация архива zip
                 string startProgramm = $@"start /D ""{ProgramFolderWithFilePath}\"" {CurrentProgramm}.exe"; //запуск программы
                 string removeTempFolder = $@"powershell Remove-Item {TempFolderPath} -Recurse -Force"; //удалим временную папку куда шла разархивация
 
