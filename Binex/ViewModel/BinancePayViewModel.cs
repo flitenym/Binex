@@ -63,6 +63,7 @@ namespace Binex.ViewModel
             {
                 payInfoCollection = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(PayInfoCollection)));
+                IsSelectedCommand.Execute(null);
             }
         }
 
@@ -79,6 +80,44 @@ namespace Binex.ViewModel
             {
                 isSuccessApiData = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsSuccessApiData)));
+            }
+        }
+
+        #endregion
+
+        #region Сумма всех пользователей
+
+        public string SumAllUsersText => SumAllUsers.HasValue ? $"Сумма для оплаты: {Math.Round(SumAllUsers.Value, 2)}$" : $"Нет загруженных данных.";
+
+        private decimal? sumAllUsers = null;
+
+        public decimal? SumAllUsers
+        {
+            get { return sumAllUsers; }
+            set
+            {
+                sumAllUsers = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(SumAllUsers)));
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(SumAllUsersText)));
+            }
+        }
+
+        #endregion
+
+        #region Баланс пользователя
+
+        public string BalanceText => Balance.HasValue ? $"Баланс USDT: {Math.Round(Balance.Value, 2)}$" : $"Нет Binance данных Api.";
+
+        private decimal? balance = null;
+
+        public decimal? Balance
+        {
+            get { return balance; }
+            set
+            {
+                balance = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(Balance)));
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(BalanceText)));
             }
         }
 
@@ -241,6 +280,11 @@ GROUP BY UserID
             BinancePayCommand.RaiseCanExecuteChanged();
 
             await GetPayInfoDataAsync();
+
+            if (IsSuccessApiData)
+            {
+                BinanceBalanceCommand.Execute(null);
+            }
         }
 
         #endregion
@@ -339,9 +383,50 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
 
         private bool CanPay()
         {
-            return IsSuccessApiData;
+            return IsSuccessApiData && SumAllUsers.HasValue && SumAllUsers != 0;
         }
 
         #endregion
+
+        #region Команда для получения баланса USDT
+
+        private AsyncCommand binanceBalanceCommand;
+
+        public AsyncCommand BinanceBalanceCommand => binanceBalanceCommand ?? (binanceBalanceCommand = new AsyncCommand(x => BinanceBalanceAsync()));
+
+        private async Task BinanceBalanceAsync()
+        {
+            var apiData = await BinanceApi.GetApiDataAsync();
+
+            if (!apiData.IsSuccess)
+            {
+                return;
+            }
+
+            var coinInfo = await BinanceApi.GetCoinAsync(StaticClass.USDT);
+
+            if (coinInfo.Currency == null)
+            {
+                await HelperMethods.Message($"Ошибка. Не найден {StaticClass.USDT}");
+                return;
+            }
+
+            Balance = coinInfo.Currency.Free;
+        }
+
+        #endregion
+
+        #region Команда для получения баланса USDT
+
+        private RelayCommand isSelectedCommand;
+
+        public RelayCommand IsSelectedCommand => isSelectedCommand ?? (isSelectedCommand = new RelayCommand(x => IsSelected()));
+
+        private void IsSelected()
+        {
+            SumAllUsers = PayInfoCollection.Any() ? PayInfoCollection.Where(x => x.IsSelected && !string.IsNullOrEmpty(x.Address) && x.UsdtToPay.HasValue).Sum(x => x.UsdtToPay) : null;
+        }
+
+        #endregion        
     }
 }

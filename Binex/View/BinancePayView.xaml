@@ -41,7 +41,7 @@
             ScrollViewer.HorizontalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
             SelectionUnit="FullRow"
-            ItemsSource="{Binding PayInfoCollection}" 
+            ItemsSource="{Binding PayInfoCollection, Mode=TwoWay}" 
             AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
@@ -53,7 +53,7 @@
                 <DataGridTemplateColumn Header="Использовать в оплате" Width="175">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox HorizontalAlignment="Center" Command="{Binding DataContext.CheckCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                            <CheckBox HorizontalAlignment="Center" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType= {x:Type UserControl}}, Path=DataContext.IsSelectedCommand}"
                                       IsChecked="{Binding Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="{DynamicResource WindowForeground}"  >
                             </CheckBox>
                         </DataTemplate>
@@ -66,18 +66,35 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Grid.ColumnSpan="2" Margin="10,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Text="{Binding SumAllUsersText}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Grid.Row="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Text="{Binding BalanceText}"
+                    TextWrapping="Wrap" />
+            </Grid>
             <Button
-                Grid.Column="1"
-                Width="200"
+                Grid.Column="2"
                 Margin="5"
                 Command="{Binding UpdateDataCommand}"
                 Content="Обновить данные"
                 Foreground="{DynamicResource PreWindowButtonForeground}"
                 Style="{DynamicResource MaterialDesignRaisedButton}" />
             <Button
-                Grid.Column="2"
-                Width="200"
+                Grid.Column="3"
                 Margin="5"
                 Command="{Binding BinancePayCommand}"
                 Content="Оплатить"
