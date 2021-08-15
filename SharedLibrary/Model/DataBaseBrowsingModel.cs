@@ -26,7 +26,7 @@ namespace SharedLibrary.Model
 
         protected override UserControl CreateViewAndViewModel()
         {
-            return new DataBaseBrowsingView() { DataContext = new DataBaseBrowsingViewModel() };
+            return new LocalDataBaseView() { DataContext = new LocalDataBaseViewModel() };
         }
 
     }

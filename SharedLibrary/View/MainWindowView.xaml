@@ -11,6 +11,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:nodes="clr-namespace:SharedLibrary.Helper.Classes"
     Width="1024"
+    MinWidth="1024"
+    MinHeight="720"
     Height="720"
     FontSize="14"
     Title="Binex"

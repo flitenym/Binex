@@ -23,11 +23,11 @@ using ExcelDataReader;
 
 namespace SharedLibrary.ViewModel
 {
-    public class DataBaseBrowsingViewModel : INotifyPropertyChanged
+    public class LocalDataBaseViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        public DataBaseBrowsingViewModel()
+        public LocalDataBaseViewModel()
         {
             LoadDataBase();
         }
@@ -44,8 +44,8 @@ namespace SharedLibrary.ViewModel
             models.ForEach(x => x.SetCanLoad(GetModelCanLoadAttribute(x)));
             models.ForEach(x => x.SetIsVisible(GetModelIsVisibleAttribute(x)));
             models.ForEach(x => x.Order = GetModelOrderAttribute(x));
-            
-            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true).OrderBy(x=>x.Order));
+
+            DatabaseModelsData = new ObservableCollection<ModelClass>(models.Where(x => x.GetIsVisible() == true).OrderBy(x => x.Order));
 
             FilterCollection = new CollectionViewSource
             {
@@ -91,7 +91,7 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Видимость поисковой строки
+        #region Видимость поисковой строки для таблиц
 
         private Visibility searchVisibility = Visibility.Hidden;
         public Visibility SearchVisibility
@@ -106,7 +106,22 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Текст в поисковой строке
+        #region Видимость поисковой строки
+
+        private Visibility findVisibility = Visibility.Hidden;
+        public Visibility FindVisibility
+        {
+            get { return findVisibility; }
+            set
+            {
+                findVisibility = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(FindVisibility)));
+            }
+        }
+
+        #endregion
+
+        #region Текст в поисковой строке таблиц
 
         private string searchText = string.Empty;
         public string SearchText
@@ -117,6 +132,22 @@ namespace SharedLibrary.ViewModel
                 searchText = value;
                 this.FilterCollection.View.Refresh();
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(SearchText)));
+            }
+        }
+
+        #endregion
+
+        #region Текст в поисковой строке
+
+        private string findText = string.Empty;
+        public string FindText
+        {
+            get { return findText; }
+            set
+            {
+                findText = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(FindText)));
+                TableData.Columns
             }
         }
 
@@ -182,7 +213,7 @@ namespace SharedLibrary.ViewModel
         {
             get { return selectedModel; }
             set
-            { 
+            {
                 selectedModel = value;
                 RefreshCommand.Execute(null);
             }
@@ -221,6 +252,36 @@ namespace SharedLibrary.ViewModel
                 isClicked = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsClicked)));
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(HideButtonToolTip)));
+            }
+        }
+
+        #endregion
+
+        #region Все доступные колонки для текущей таблицы
+
+        private ObservableCollection<string> tableColumns = new ObservableCollection<string>();
+        public ObservableCollection<string> TableColumns
+        {
+            get { return tableColumns; }
+            set
+            {
+                tableColumns = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableColumns)));
+            }
+        }
+
+        #endregion
+
+        #region Выбранная колонка для текущей таблицы
+
+        private string tableColumn;
+        public string TableColumn
+        {
+            get { return tableColumn; }
+            set
+            {
+                tableColumn = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableColumn)));
             }
         }
 
@@ -346,7 +407,7 @@ namespace SharedLibrary.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    Task.Factory.StartNew(async () => await Message ($"{ex.Message}"));
+                    Task.Factory.StartNew(async () => await Message($"{ex.Message}"));
                 }
             }
         }
@@ -376,14 +437,30 @@ namespace SharedLibrary.ViewModel
             if (SelectedModelType == null || SelectedModelName == null)
             {
                 TableData = new DataTable();
+                TableColumns.Clear();
+                TableColumn = null;
+                FindText = null;
             }
             else
             {
                 TableData = await SQLExecutor.SelectExecutorAsync(SelectedModelType, SelectedModelName);
-            } 
+                TableColumns.Clear();
+
+                for (int i = 0; i < TableData.Columns.Count; i++)
+                {
+                    if (TableData.Columns[i].Caption != "ID" &&
+                        TableData.Columns[i].Caption != nameof(ModelClass.Title) &&
+                        TableData.Columns[i].Caption != nameof(ModelClass.Order))
+                    {
+                        TableColumns.Add(TableData.Columns[i].Caption);
+                    }
+                }
+
+                TableColumn = TableColumns.FirstOrDefault();
+            }
 
             TableData.AcceptChanges();
-            PropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedModel))); 
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedModel)));
         }
 
         #endregion
@@ -410,7 +487,7 @@ namespace SharedLibrary.ViewModel
             }
             else return;
 
-            
+
             if (selectedItems.Count() == 0)
             {
                 await Message("Нет выделенных строк");
@@ -469,8 +546,8 @@ namespace SharedLibrary.ViewModel
             var changes = TableData.GetChanges();
 
             if (changes != null && changes.Rows.Count != 0)
-            { 
-                for (int i =0; i<changes.Rows.Count; i++)
+            {
+                for (int i = 0; i < changes.Rows.Count; i++)
                 {
                     if (int.TryParse(changes.Rows[i]["ID"].ToString(), out int IDChangeRow))
                     {
@@ -482,7 +559,7 @@ namespace SharedLibrary.ViewModel
             }
 
             var newRow = TableData.NewRow();
-            var ID = await SQLExecutor.InsertExecutorAsync(SelectedModel, SelectedModel); 
+            var ID = await SQLExecutor.InsertExecutorAsync(SelectedModel, SelectedModel);
             if (ID != -1)
             {
                 newRow["ID"] = ID;
@@ -531,7 +608,7 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Команда для поиска
+        #region Команда для поиска таблиц
 
         private RelayCommand searchCommand;
         public RelayCommand SearchCommand => searchCommand ?? (searchCommand = new RelayCommand(x => SearchFunction()));
@@ -545,14 +622,39 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Команда для закрытия
+        #region Команда для поиска
+
+        private RelayCommand findCommand;
+        public RelayCommand FindCommand => findCommand ?? (findCommand = new RelayCommand(x => FindFunction()));
+
+        public void FindFunction()
+        {
+            FindVisibility = FindVisibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
+            FindText = string.Empty;
+        }
+
+        #endregion
+
+        #region Команда для закрытия поиск таблиц
 
         private RelayCommand searchCloseCommand;
         public RelayCommand SearchCloseCommand => searchCloseCommand ?? (searchCloseCommand = new RelayCommand(x => SearchTextEmpty()));
 
         public void SearchTextEmpty()
         {
-            SearchText = string.Empty; 
+            SearchText = string.Empty;
+        }
+
+        #endregion
+
+        #region Команда для закрытия поиска
+
+        private RelayCommand findCloseCommand;
+        public RelayCommand FindCloseCommand => findCloseCommand ?? (findCloseCommand = new RelayCommand(x => FindTextEmpty()));
+
+        public void FindTextEmpty()
+        {
+            FindText = string.Empty;
         }
 
         #endregion
@@ -569,7 +671,7 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
-        #region Команда для перемещения панели
+        #region Команда для прокрутки
 
         private RelayCommand scrollItemCommand;
         public RelayCommand ScrollItemCommand => scrollItemCommand ?? (scrollItemCommand = new RelayCommand(obj => Scroll(obj)));

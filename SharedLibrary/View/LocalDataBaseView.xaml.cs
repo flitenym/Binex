@@ -6,9 +6,9 @@ using System.Windows.Controls;
 
 namespace SharedLibrary.View
 {
-    public partial class DataBaseBrowsingView : UserControl, IDisposable
+    public partial class LocalDataBaseView : UserControl, IDisposable
     {
-        public DataBaseBrowsingView()
+        public LocalDataBaseView()
         {
             InitializeComponent();
             DataGridTable.AutoGeneratingColumn += Helper.HelperMethods.DataGrid_AutoGeneratingColumn;

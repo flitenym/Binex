@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="SharedLibrary.View.DataBaseBrowsingView"
+    x:Class="SharedLibrary.View.LocalDataBaseView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:bhv="clr-namespace:SharedLibrary.Behavior"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1000"
     mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -15,6 +15,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Textblock.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -129,7 +130,7 @@
                 VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="45" />
+                    <RowDefinition Height="50" />
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0">
                     <Grid.RenderTransform>
@@ -181,17 +182,15 @@
                         ScrollViewer.CanContentScroll="True"
                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        bhv:DataGridBehavior.ScrollCommand="{Binding ScrollItemCommand}"
                         SelectionUnit="FullRow" />
                 </Grid>
-                <StackPanel
+                <Grid
                     Grid.Row="1"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
-                    <StackPanel.RenderTransform>
+                    HorizontalAlignment="Stretch">
+                    <Grid.RenderTransform>
                         <TranslateTransform Y="0" />
-                    </StackPanel.RenderTransform>
-                    <StackPanel.Style>
+                    </Grid.RenderTransform>
+                    <Grid.Style>
                         <Style>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsClicked}" Value="True">
@@ -218,11 +217,74 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </StackPanel.Style>
+                    </Grid.Style>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Visibility="{Binding FindVisibility}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            Grid.Column="0"
+                            Margin="5,0,5,0"
+                            ItemsSource="{Binding TableColumns, Mode=TwoWay}"
+                            SelectedValue="{Binding TableColumn, Mode=TwoWay}"/>
+                        <TextBox
+                            Grid.Column="1"
+                            x:Name="FindTextBox"
+                            Margin="2"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            materialDesign:HintAssist.Hint="Поиск"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                            Text="{Binding FindText, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button
+                            Grid.Column="1"
+                            Width="20"
+                            Height="auto"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding FindCloseCommand}"
+                            Foreground="{DynamicResource PreWindowButtonForeground}"
+                            Style="{DynamicResource ButtonZoom}">
+                                <materialDesign:PackIcon
+                                Width="15"
+                                Height="Auto"
+                                Kind="Close" />
+                        </Button>
+                    </Grid>
                     <Button
+                        Grid.Column="1"
+                        Width="auto"
+                        Height="auto"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{Binding FindCommand}"
+                        Foreground="{DynamicResource PreWindowButtonForeground}"
+                        Style="{DynamicResource ButtonZoom}"
+                        ToolTip="Поиск"
+                        ToolTipService.Placement="Bottom">
+                            <materialDesign:PackIcon
+                            Width="30"
+                            Height="Auto"
+                            Kind="Search" />
+                    </Button>
+                    <Button
+                        Grid.Column="2"
                         Width="auto"
                         Height="auto"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Command="{Binding LoadCommand}"
                         Foreground="{DynamicResource PreWindowButtonForeground}"
                         Style="{DynamicResource ButtonZoom}"
@@ -234,9 +296,11 @@
                             Kind="ProgressDownload" />
                     </Button>
                     <Button
+                        Grid.Column="3"
                         Width="auto"
                         Height="auto"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Command="{Binding RefreshCommand}"
                         Foreground="{DynamicResource PreWindowButtonForeground}"
                         Style="{DynamicResource ButtonZoom}"
@@ -248,9 +312,11 @@
                             Kind="Refresh" />
                     </Button>
                     <Button
+                        Grid.Column="4"
                         Width="auto"
                         Height="auto"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Command="{Binding UpdateRowCommand}"
                         Foreground="{DynamicResource PreWindowButtonForeground}"
                         Style="{DynamicResource ButtonZoom}"
@@ -262,9 +328,11 @@
                             Kind="Check" />
                     </Button>
                     <Button
+                        Grid.Column="5"
                         Width="auto"
                         Height="auto"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Command="{Binding InsertRowCommand}"
                         Foreground="{DynamicResource PreWindowButtonForeground}"
                         Style="{DynamicResource ButtonZoom}"
@@ -276,9 +344,11 @@
                             Kind="Plus" />
                     </Button>
                     <Button
+                        Grid.Column="6"
                         Width="auto"
                         Height="auto"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Command="{Binding DeleteRowCommand}"
                         CommandParameter="{Binding SelectedItems, ElementName=DataGridTable}"
                         Foreground="{DynamicResource PreWindowButtonForeground}"
@@ -290,7 +360,7 @@
                             Height="Auto"
                             Kind="Minus" />
                     </Button>
-                </StackPanel>
+                </Grid>
                 <Button
                     Grid.Row="1"
                     Height="3"
