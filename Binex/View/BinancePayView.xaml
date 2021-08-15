@@ -45,6 +45,7 @@
             AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Идентификатор пользователя" Binding="{Binding UserID}" IsReadOnly="true" />
+                <DataGridTextColumn Header="ФИО пользователя" Binding="{Binding UserName}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTC" Binding="{Binding AgentEarnBtc}" IsReadOnly="true" />
                 <DataGridTextColumn Header="BTC/USDT" Binding="{Binding StringFormat=N2, Path=AgentEarnUsdt}" IsReadOnly="true" />
                 <DataGridTextColumn Header="USDT" Binding="{Binding StringFormat=N4, Path=UsdtToPay}" IsReadOnly="true" />

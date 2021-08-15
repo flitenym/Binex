@@ -20,6 +20,7 @@ namespace Binex.ViewModel
     {
         public int ID { get; set; }
         public double? UserID { get; set; }
+        public string UserName { get; set; }
         public decimal AgentEarnBtc { get; set; }
         public decimal AgentEarnUsdt { get; set; }
         public decimal? UsdtToPay { get; set; }
@@ -46,7 +47,7 @@ namespace Binex.ViewModel
 
         public BinancePayViewModel()
         {
-            Task.Factory.StartNew(async () => await GetMainInfoAsync());
+            LoadInfoCommand.Execute(null);
         }
 
         #region Fields
@@ -67,20 +68,21 @@ namespace Binex.ViewModel
 
         #endregion
 
-        #endregion
+        #region Api данные добавлены
 
-        #region Получение данных
+        private bool isSuccessApiData = false;
 
-        private async Task GetMainInfoAsync()
+        public bool IsSuccessApiData
         {
-            var apiData = await BinanceApi.GetApiDataAsync();
-
-            if (!apiData.IsSuccess)
+            get { return isSuccessApiData; }
+            set
             {
-                return;
+                isSuccessApiData = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsSuccessApiData)));
             }
-            LoadInfoCommand.Execute(null);
         }
+
+        #endregion
 
         #endregion
 
@@ -117,7 +119,8 @@ namespace Binex.ViewModel
 WITH VarTable AS (
 	SELECT 
         di.ID, 
-        di.UserID, 
+        di.UserID,
+        ui.UserName,
         di.AgentEarnBtc,
         di.AgentEarnUsdt,
         ui.Address, 
@@ -232,6 +235,11 @@ GROUP BY UserID
 
         public async Task LoadInfoAsync()
         {
+            var apiData = await BinanceApi.GetApiDataAsync();
+
+            IsSuccessApiData = apiData.IsSuccess;
+            BinancePayCommand.RaiseCanExecuteChanged();
+
             await GetPayInfoDataAsync();
         }
 
@@ -255,7 +263,7 @@ GROUP BY UserID
 
         private AsyncCommand binancePayCommand;
 
-        public AsyncCommand BinancePayCommand => binancePayCommand ?? (binancePayCommand = new AsyncCommand(x => BinancePayAsync()));
+        public AsyncCommand BinancePayCommand => binancePayCommand ?? (binancePayCommand = new AsyncCommand(x => BinancePayAsync(), y => CanPay()));
 
         private async Task BinancePayAsync()
         {
@@ -327,6 +335,11 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
             await HelperMethods.Message("Оплата выполнена");
 
             LoadInfoCommand.Execute(null);
+        }
+
+        private bool CanPay()
+        {
+            return IsSuccessApiData;
         }
 
         #endregion
