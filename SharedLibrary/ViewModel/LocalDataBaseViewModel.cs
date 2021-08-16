@@ -20,6 +20,8 @@ using static SharedLibrary.Helper.HelperMethods;
 using System.Windows.Controls;
 using System.IO;
 using ExcelDataReader;
+using System.Text;
+using SharedLibrary.Helper.Classes;
 
 namespace SharedLibrary.ViewModel
 {
@@ -60,6 +62,19 @@ namespace SharedLibrary.ViewModel
 
         #region Отображение данных в таблице
 
+        private DataView tableDataView;
+
+        public DataView TableDataView
+        {
+            get { return tableDataView; }
+            set
+            {
+                if (value == null) return;
+                tableDataView = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableDataView)));
+            }
+        }
+
         private DataTable tableData;
 
         public DataTable TableData
@@ -71,6 +86,7 @@ namespace SharedLibrary.ViewModel
                 tableData?.Clear();
                 tableData = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableData)));
+                TableDataView = new DataView(TableData);
             }
         }
 
@@ -146,8 +162,8 @@ namespace SharedLibrary.ViewModel
             set
             {
                 findText = value;
+                FilterDataViewCommand.Execute(null);
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(FindText)));
-                TableData.Columns
             }
         }
 
@@ -259,8 +275,8 @@ namespace SharedLibrary.ViewModel
 
         #region Все доступные колонки для текущей таблицы
 
-        private ObservableCollection<string> tableColumns = new ObservableCollection<string>();
-        public ObservableCollection<string> TableColumns
+        private ObservableCollection<TableColumnData> tableColumns = new ObservableCollection<TableColumnData>();
+        public ObservableCollection<TableColumnData> TableColumns
         {
             get { return tableColumns; }
             set
@@ -274,8 +290,8 @@ namespace SharedLibrary.ViewModel
 
         #region Выбранная колонка для текущей таблицы
 
-        private string tableColumn;
-        public string TableColumn
+        private TableColumnData tableColumn;
+        public TableColumnData TableColumn
         {
             get { return tableColumn; }
             set
@@ -376,6 +392,26 @@ namespace SharedLibrary.ViewModel
 
         #endregion
 
+        #region Фильтрация таблицы
+
+        private AsyncCommand filterDataViewCommand;
+
+        public AsyncCommand FilterDataViewCommand => filterDataViewCommand ?? (filterDataViewCommand = new AsyncCommand(x => FilterDataView()));
+
+        private async Task FilterDataView()
+        {
+            if (!string.IsNullOrEmpty(findText) && FindVisibility == Visibility.Visible && !string.IsNullOrEmpty(TableColumn?.ColumnName))
+            {
+                await Task.Factory.StartNew(() => TableDataView.RowFilter = $"{TableColumn.ColumnName} LIKE '%{findText}%'");
+            }
+            else
+            {
+                await Task.Factory.StartNew(() => TableDataView.RowFilter = string.Empty);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Команда для загрузки из Excel
@@ -437,6 +473,7 @@ namespace SharedLibrary.ViewModel
             if (SelectedModelType == null || SelectedModelName == null)
             {
                 TableData = new DataTable();
+                TableData.AcceptChanges();
                 TableColumns.Clear();
                 TableColumn = null;
                 FindText = null;
@@ -444,22 +481,27 @@ namespace SharedLibrary.ViewModel
             else
             {
                 TableData = await SQLExecutor.SelectExecutorAsync(SelectedModelType, SelectedModelName);
-                TableColumns.Clear();
+                TableData.AcceptChanges();
 
+                var tableColumnBeforeClear = TableColumn?.ShallowCopy();
+
+                TableColumns.Clear();
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableColumn)));
                 for (int i = 0; i < TableData.Columns.Count; i++)
                 {
                     if (TableData.Columns[i].Caption != "ID" &&
                         TableData.Columns[i].Caption != nameof(ModelClass.Title) &&
                         TableData.Columns[i].Caption != nameof(ModelClass.Order))
                     {
-                        TableColumns.Add(TableData.Columns[i].Caption);
+                        TableColumns.Add(new TableColumnData() { ColumnName = TableData.Columns[i].ColumnName, ColumnCaption = TableData.Columns[i].Caption, ColumnType = TableData.Columns[i].DataType });
                     }
                 }
 
-                TableColumn = TableColumns.FirstOrDefault();
+                TableColumn = TableColumns.Any(x => x.ColumnName == tableColumnBeforeClear?.ColumnName) ? tableColumnBeforeClear?.ShallowCopy() : TableColumns.FirstOrDefault();
             }
 
-            TableData.AcceptChanges();
+            FilterDataViewCommand.Execute(null);
+
             PropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedModel)));
         }
 
