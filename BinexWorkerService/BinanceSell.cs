@@ -51,16 +51,16 @@ namespace BinexWorkerService
                 bool isSuccess = await Sell(_logger);
                 if (isSuccess)
                 {
-                    _logger.Trace($"Продажа прошла успешно");
+                    _logger?.Trace($"Продажа прошла успешно");
                 }
                 else
                 {
-                    _logger.Info($"Продажа прошла неудачно");
+                    _logger?.Info($"Продажа прошла неудачно");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Info($"Продажа прошла с ошибками {ex.Message}");
+                _logger?.Info($"Продажа прошла с ошибками {ex.Message}");
             }
 
             return;
@@ -68,7 +68,7 @@ namespace BinexWorkerService
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.Trace($"Остановка службы {nameof(BinanceSell)}");
+            _logger?.Trace($"Остановка службы {nameof(BinanceSell)}");
             return base.StopAsync(cancellationToken);
         }
 
@@ -81,12 +81,12 @@ namespace BinexWorkerService
             var apiData = await BinanceApi.GetApiDataAsync(logger);
             if (!apiData.IsSuccess)
             {
-                logger.Error($"Нет указанных данных ApiKey в настройках.");
+                logger?.Error($"Нет указанных данных ApiKey в настройках.");
                 return false;
             }
             else
             {
-                logger.Trace($"ApiKey указаны.");
+                logger?.Trace($"ApiKey указаны.");
             }
 
             #endregion
@@ -98,34 +98,34 @@ namespace BinexWorkerService
             var emails = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailsKey);
             if (string.IsNullOrEmpty(emails?.Value))
             {
-                logger.Error($"Нет указанных почтовых адресов в настройках.");
+                logger?.Error($"Нет указанных почтовых адресов в настройках.");
                 isNeedSendEmail = false;
             }
             else
             {
-                logger.Trace($"Почта указана. {emails.Value}");
+                logger?.Trace($"Почта указана. {emails.Value}");
             }
 
             var emailLogin = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailLoginKey);
             var emailPassword = await HelperMethods.GetByKeyInDBAsync(InfoKeys.EmailPasswordKey);
             if (string.IsNullOrEmpty(emailLogin?.Value))
             {
-                logger.Error($"Не указана почта отправителя в настройках.");
+                logger?.Error($"Не указана почта отправителя в настройках.");
                 isNeedSendEmail = false;
             }
             else
             {
-                logger.Trace($"Почта отправителя указана. {emailLogin.Value}");
+                logger?.Trace($"Почта отправителя указана. {emailLogin.Value}");
             }
 
             if (string.IsNullOrEmpty(emailPassword?.Value))
             {
-                logger.Error($"Не указан пароль от почты отправителя в настройках.");
+                logger?.Error($"Не указан пароль от почты отправителя в настройках.");
                 isNeedSendEmail = false;
             }
             else
             {
-                logger.Trace($"Пароль от почты отправителя указан. {emailPassword.Value}");
+                logger?.Trace($"Пароль от почты отправителя указан. {emailPassword.Value}");
             }
 
             #endregion
@@ -135,40 +135,40 @@ namespace BinexWorkerService
             var isTransferFromFuturesToSpot = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsTransferFromFuturesToSpotKey))?.Value == bool.TrueString;
             if (!isTransferFromFuturesToSpot)
             {
-                logger.Error($"\"Перевод USDT из Фьючерс в Спот\" выключена в настройках.");
+                logger?.Error($"\"Перевод USDT из Фьючерс в Спот\" выключена в настройках.");
             }
             else
             {
-                logger.Trace($"\"Перевод USDT из Фьючерс в Спот\" указан");
+                logger?.Trace($"\"Перевод USDT из Фьючерс в Спот\" указан");
             }
 
             var isDustSell = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsDustSellKey))?.Value == bool.TrueString;
             if (!isDustSell)
             {
-                logger.Error($"\"Перевод монет с маленьким балансом в BNB\" выключена в настройках.");
+                logger?.Error($"\"Перевод монет с маленьким балансом в BNB\" выключена в настройках.");
             }
             else
             {
-                logger.Trace($"\"Перевод монет с маленьким балансом в BNB\" указан");
+                logger?.Trace($"\"Перевод монет с маленьким балансом в BNB\" указан");
             }
 
             var isCurrenciesSell = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.IsCurrenciesSellKey))?.Value == bool.TrueString;
             if (!isCurrenciesSell)
             {
-                logger.Error($"\"Продажа криптовалют\" выключена в настройках.");
+                logger?.Error($"\"Продажа криптовалют\" выключена в настройках.");
             }
             else
             {
-                logger.Trace($"\"Продажа криптовалют\" указана");
+                logger?.Trace($"\"Продажа криптовалют\" указана");
             }
 
             #endregion
 
             List<CurrencyInfo> currenciesInfo = new List<CurrencyInfo>();
+            string isSuccessTransferSpotEmail = string.Empty;
+            string isDustSellEmail = string.Empty;
 
             #region Перевод USDT из Фьючерс в Спот
-
-            string isSuccessTransferSpotEmail = string.Empty;
 
             if (isTransferFromFuturesToSpot)
             {
@@ -178,25 +178,19 @@ namespace BinexWorkerService
                 if (isSuccessTransferSpot)
                 {
                     isSuccessTransferSpotEmail = "<p>Перевод USDT из фьючерс в спот был осуществлен.</p>";
-                    if (logger != null)
-                    {
-                        logger.Trace($"Перевод USDT из фьючерс в спот был осуществлен");
-                    }
+
+                    logger?.Trace($"Перевод USDT из фьючерс в спот был осуществлен");
                 }
                 else
                 {
-                    if (logger != null)
-                    {
-                        logger.Error($"Перевод USDT из фьючерс в спот не был осуществлен");
-                    }
+                    logger?.Error($"Перевод USDT из фьючерс в спот не был осуществлен");
+
                 }
             }
 
             #endregion
 
             #region Перевод монет с маленьким балансом в BNB
-
-            string isDustSellEmail = string.Empty;
 
             if (isDustSell)
             {
@@ -207,10 +201,8 @@ namespace BinexWorkerService
                 {
                     isDustSellEmail = $"<p>{messageTransferDust}</p>";
 
-                    if (logger != null)
-                    {
-                        logger.Trace($"{messageTransferDust}");
-                    }
+                    logger?.Trace($"{messageTransferDust}");
+
                 }
             }
 
@@ -220,15 +212,19 @@ namespace BinexWorkerService
 
             if (isCurrenciesSell)
             {
-                // продаем все монетки
-                (bool isSuccess, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesAsync(logger: logger);
+                (bool isSuccessGetExchangeInfo, BinanceExchangeInfo exchangeInfo) = await BinanceApi.GetExchangeInfo(logger: logger);
 
-                if (logger != null)
+                if (!isSuccessGetExchangeInfo)
                 {
-                    logger.Trace($"Продажа монет: {string.Join(", ", currencies.Select(x => x.Asset))}");
+                    logger.Error("Ошибка получения информации минимальных требований по символам для перевода");
+                    return false;
                 }
 
-                if (!isSuccess)
+                (bool isSuccessGetAllCurrencies, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesWithoutUSDTAsync(logger: logger);
+
+                logger?.Trace($"Продажа монет: {string.Join(", ", currencies.Select(x => x.Asset))}");
+
+                if (!isSuccessGetAllCurrencies)
                 {
                     return false;
                 }
@@ -238,13 +234,13 @@ namespace BinexWorkerService
                     // если цена между валютой текущей и USDT существует, то только тогда продадим
                     (bool isSuccessPriceUSDT, BinancePrice priceUSDT) = await BinanceApi.GetPrice(currency.Asset, StaticClass.USDT, logger: logger);
 
-                    if (isSuccessPriceUSDT)
+                    if (isSuccessPriceUSDT && !string.IsNullOrEmpty(priceUSDT.Symbol))
                     {
-                        bool isSuccessSellUSDT = await BinanceApi.SellCoinAsync(currency.Free, currency.Asset, StaticClass.USDT, logger: logger);
-                        currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = true, IsSuccessSell = isSuccessSellUSDT, IsWasNeedToBTC = false });
-                        if (logger != null)
+                        bool isSuccessSellUSDT = await BinanceApi.SellCoinAsync(exchangeInfo, currency.Free, currency.Asset, StaticClass.USDT, logger: logger);
+
+                        if (isSuccessSellUSDT)
                         {
-                            logger.Trace($"Продажа монеты {currency.Asset}: {(isSuccessSellUSDT ? "Успешно" : "Неудачно")}");
+                            currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = true, IsSuccessSell = isSuccessSellUSDT, IsWasNeedToBTC = false });
                         }
                     }
                     else
@@ -257,24 +253,23 @@ namespace BinexWorkerService
                             // в случае если транзакцию нам нужно выполнять по продаже BTC, может она работает в течении секунды, поставим лучше ожидание
                             await Task.Delay(2000);
                             // получим BTC текущего кошелька и попробуем продать его
-                            (bool isSuccessBTC, List<BinanceBalance> curreniesBTC) = await BinanceApi.GetAllCurrenciesAsync(StaticClass.BTC, logger: logger);
-
-                            if (logger != null)
-                            {
-                                logger.Trace($"Продажа монет: {string.Join(", ", curreniesBTC.Select(x => x.Asset))}");
-                            }
+                            (bool isSuccessBTC, List<BinanceBalance> curreniesBTC) = await BinanceApi.GetGeneralAllCurrenciesByAssetAsync(StaticClass.BTC, logger: logger);
 
                             if (isSuccessBTC && curreniesBTC.Any())
                             {
                                 var currencyBTC = curreniesBTC.First();
-                                bool isSuccessSellBTC = await BinanceApi.SellCoinAsync(currencyBTC.Free, currencyBTC.Asset, StaticClass.BTC, logger: logger);
-                                currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = true, IsSuccessSell = isSuccessSellBTC, IsWasNeedToBTC = true });
-                            }
-                            else
-                            {
-                                currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = false, IsSuccessSell = false, IsWasNeedToBTC = true });
+                                bool isSuccessSellBTC = await BinanceApi.SellCoinAsync(exchangeInfo, currencyBTC.Free, currencyBTC.Asset, StaticClass.BTC, logger: logger);
+                                if (isSuccessSellBTC)
+                                {
+                                    currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = true, IsSuccessSell = isSuccessSellBTC, IsWasNeedToBTC = true });
+                                }
                             }
                         }
+                    }
+
+                    if (!currenciesInfo.Any(x => x.Asset == currency.Asset))
+                    {
+                        currenciesInfo.Add(new CurrencyInfo() { Asset = currency.Asset, IsSuccess = false, IsSuccessSell = false, IsWasNeedToBTC = true });
                     }
                 }
             }
@@ -287,10 +282,7 @@ namespace BinexWorkerService
             {
                 var body = CreateEmailBody(currenciesInfo, isSuccessTransferSpotEmail, isDustSellEmail);
 
-                if (logger != null)
-                {
-                    logger.Trace($"Уведомление:{Environment.NewLine}{body}");
-                }
+                logger?.Trace($"Уведомление:{Environment.NewLine}{body}");
 
                 var emailsInfo = emails.Value.Split(',');
                 foreach (var email in emailsInfo)
