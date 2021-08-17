@@ -416,7 +416,7 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
 
         #endregion
 
-        #region Команда для получения баланса USDT
+        #region Команда для получения суммы всех пользователей
 
         private RelayCommand isSelectedCommand;
 
@@ -427,6 +427,21 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
             SumAllUsers = PayInfoCollection.Any() ? PayInfoCollection.Where(x => x.IsSelected && !string.IsNullOrEmpty(x.Address) && x.UsdtToPay.HasValue).Sum(x => x.UsdtToPay) : null;
         }
 
-        #endregion        
+        #endregion
+
+        #region Команда для получения суммы всех пользователей
+
+        private AsyncCommand testCommand;
+
+        public AsyncCommand TestCommand => testCommand ?? (testCommand = new AsyncCommand(x => TestMehtod()));
+
+        private async Task TestMehtod()
+        {
+            //var x = await BinanceApi.GetExchangeInfo();
+        }
+
+        #endregion
+
+        
     }
 }
