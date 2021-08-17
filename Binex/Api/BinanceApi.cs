@@ -314,7 +314,7 @@ namespace Binex.Api
 
             var client = new BinanceClient(options);
 
-            decimal resultQuantity = GetQuantity(exchangeInfo, fromAsset, quantity, logger);
+            decimal resultQuantity = await GetQuantity(exchangeInfo, fromAsset, toAsset, quantity, logger);
 
             if (resultQuantity == default(decimal))
             {
@@ -476,6 +476,37 @@ namespace Binex.Api
         }
 
         /// <summary>
+        /// Получение средней цены между монетами
+        /// </summary>
+        public static async Task<(bool IsSuccess, decimal Average)> GetAverageInfo(string fromAsset, string toAsset, Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync(logger: logger);
+
+            if (!apiData.IsSuccess)
+            {
+                return default;
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.Spot.Market.GetCurrentAvgPriceAsync($"{fromAsset}{toAsset}");
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка получения средней цены {fromAsset}{toAsset}. {result.Error}", logger: logger);
+                return default;
+            }
+
+            return (true, result.Data.Price);
+        }
+
+        /// <summary>
         /// Продажа маленького баланса
         /// </summary>
         /// <param name="logger"></param>
@@ -567,17 +598,17 @@ namespace Binex.Api
         /// <param name="asset">Валюта</param>
         /// <param name="quantity">Количество для продажи</param>
         /// <returns></returns>
-        public static decimal GetQuantity(BinanceExchangeInfo exchangeInfo, string asset, decimal quantity, Logger logger = null)
+        public static async Task<decimal> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, Logger logger = null)
         {
-            var symbolFilterLotSize = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == asset)?.LotSizeFilter;
-            var symbolFilterMinNotional = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == asset)?.MinNotionalFilter;
+            var symbolFilterLotSize = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.LotSizeFilter;
+            var symbolFilterMinNotional = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.MinNotionalFilter;
 
             if (symbolFilterLotSize == null)
             {
                 return default;
             }
 
-            decimal resultQuantity = Math.Round(quantity, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize/ 1.000000000000000000000000000000000m)[3])[2], MidpointRounding.ToNegativeInfinity);
+            decimal resultQuantity = Math.Round(quantity, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize / 1.000000000000000000000000000000000m)[3])[2], MidpointRounding.ToNegativeInfinity);
 
             logger?.Trace($"ResultQuantity: {resultQuantity}, StepSize: {symbolFilterLotSize.StepSize}, MinQuantity: {symbolFilterLotSize.MinQuantity}, MaxQuantity: {symbolFilterLotSize.MaxQuantity}");
 
@@ -585,8 +616,15 @@ namespace Binex.Api
             {
                 logger?.Trace("Проверку на LOT_SIZE прошло");
 
-                logger?.Trace($"ResultQuantity: {resultQuantity}, MinNotional: {symbolFilterMinNotional.MinNotional}");
-                if (resultQuantity >= symbolFilterMinNotional.MinNotional && symbolFilterMinNotional.ApplyToMarketOrders)
+                (bool isSuccessGetAverageInfo, decimal averagePrice) = await GetAverageInfo(fromAsset, toAsset, logger);
+
+                if (!isSuccessGetAverageInfo)
+                {
+                    return default;
+                }
+
+                logger?.Trace($"ResultQuantity: {resultQuantity}, AveragePrice: {averagePrice}, MinNotional: {symbolFilterMinNotional.MinNotional}");
+                if (resultQuantity * averagePrice >= symbolFilterMinNotional.MinNotional && symbolFilterMinNotional.ApplyToMarketOrders)
                 {
                     logger?.Trace("Проверку на MIN_NOTIONAL прошло");
                     return resultQuantity;
