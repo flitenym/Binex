@@ -314,7 +314,7 @@ namespace Binex.Api
 
             var client = new BinanceClient(options);
 
-            decimal resultQuantity = await GetQuantity(exchangeInfo, fromAsset, toAsset, quantity, logger);
+            decimal resultQuantity = await GetQuantity(exchangeInfo, fromAsset, quantity, logger);
 
             if (resultQuantity == default(decimal))
             {
@@ -598,7 +598,7 @@ namespace Binex.Api
         /// <param name="asset">Валюта</param>
         /// <param name="quantity">Количество для продажи</param>
         /// <returns></returns>
-        public static async Task<decimal> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, Logger logger = null)
+        public static async Task<decimal> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, decimal quantity, Logger logger = null)
         {
             var symbolFilterLotSize = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.LotSizeFilter;
             var symbolFilterMinNotional = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.MinNotionalFilter;
@@ -608,7 +608,7 @@ namespace Binex.Api
                 return default;
             }
 
-            decimal resultQuantity = Math.Round(quantity, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize / 1.000000000000000000000000000000000m)[3])[2], MidpointRounding.ToNegativeInfinity);
+            decimal resultQuantity = Math.Round(quantity, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize / 1.0000000000m)[3])[2], MidpointRounding.ToNegativeInfinity);
 
             logger?.Trace($"ResultQuantity: {resultQuantity}, StepSize: {symbolFilterLotSize.StepSize}, MinQuantity: {symbolFilterLotSize.MinQuantity}, MaxQuantity: {symbolFilterLotSize.MaxQuantity}");
 
@@ -616,7 +616,7 @@ namespace Binex.Api
             {
                 logger?.Trace("Проверку на LOT_SIZE прошло");
 
-                (bool isSuccessGetAverageInfo, decimal averagePrice) = await GetAverageInfo(fromAsset, toAsset, logger);
+                (bool isSuccessGetAverageInfo, decimal averagePrice) = await GetAverageInfo(fromAsset, StaticClass.BTC, logger);
 
                 if (!isSuccessGetAverageInfo)
                 {
