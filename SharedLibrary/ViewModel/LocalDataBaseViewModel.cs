@@ -162,7 +162,6 @@ namespace SharedLibrary.ViewModel
             set
             {
                 findText = value;
-                FilterDataViewCommand.Execute(null);
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(FindText)));
             }
         }
@@ -398,15 +397,21 @@ namespace SharedLibrary.ViewModel
 
         public AsyncCommand FilterDataViewCommand => filterDataViewCommand ?? (filterDataViewCommand = new AsyncCommand(x => FilterDataView()));
 
+        private void Filter(string query)
+        {
+            TableDataView.RowFilter = query;
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableDataView)));
+        }
+
         private async Task FilterDataView()
         {
-            if (!string.IsNullOrEmpty(findText) && FindVisibility == Visibility.Visible && !string.IsNullOrEmpty(TableColumn?.ColumnName))
+            if (!string.IsNullOrEmpty(FindText) && FindVisibility == Visibility.Visible && !string.IsNullOrEmpty(TableColumn?.ColumnName))
             {
-                await Task.Factory.StartNew(() => TableDataView.RowFilter = $"{TableColumn.ColumnName} LIKE '%{findText}%'");
+                await Task.Factory.StartNew(() => Filter($"Convert([{TableColumn.ColumnName}], System.String) LIKE '%{FindText}%'"));
             }
             else
             {
-                await Task.Factory.StartNew(() => TableDataView.RowFilter = string.Empty);
+                await Task.Factory.StartNew(() => Filter(string.Empty));
             }
         }
 
@@ -483,10 +488,8 @@ namespace SharedLibrary.ViewModel
                 TableData = await SQLExecutor.SelectExecutorAsync(SelectedModelType, SelectedModelName);
                 TableData.AcceptChanges();
 
-                var tableColumnBeforeClear = TableColumn?.ShallowCopy();
-
                 TableColumns.Clear();
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableColumn)));
+
                 for (int i = 0; i < TableData.Columns.Count; i++)
                 {
                     if (TableData.Columns[i].Caption != "ID" &&
@@ -497,7 +500,7 @@ namespace SharedLibrary.ViewModel
                     }
                 }
 
-                TableColumn = TableColumns.Any(x => x.ColumnName == tableColumnBeforeClear?.ColumnName) ? tableColumnBeforeClear?.ShallowCopy() : TableColumns.FirstOrDefault();
+                TableColumn = TableColumns.FirstOrDefault();
             }
 
             FilterDataViewCommand.Execute(null);

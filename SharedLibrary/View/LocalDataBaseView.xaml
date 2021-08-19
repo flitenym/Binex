@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:bhv="clr-namespace:SharedLibrary.Behavior"
     d:DesignHeight="450"
     d:DesignWidth="1000"
@@ -258,7 +259,14 @@
                             VerticalAlignment="Center"
                             materialDesign:HintAssist.Hint="Поиск"
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                            Text="{Binding FindText, UpdateSourceTrigger=PropertyChanged}" />
+                            Text="{Binding FindText, UpdateSourceTrigger=PropertyChanged}"
+                            AcceptsReturn="False">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="KeyDown" >
+                                    <i:InvokeCommandAction Command="{Binding FilterDataViewCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
                         <Button
                             Grid.Column="1"
                             Width="20"

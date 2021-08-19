@@ -428,20 +428,5 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
         }
 
         #endregion
-
-        #region Команда для получения суммы всех пользователей
-
-        private AsyncCommand testCommand;
-
-        public AsyncCommand TestCommand => testCommand ?? (testCommand = new AsyncCommand(x => TestMehtod()));
-
-        private async Task TestMehtod()
-        {
-            //var x = await BinanceApi.GetExchangeInfo();
-        }
-
-        #endregion
-
-        
     }
 }
