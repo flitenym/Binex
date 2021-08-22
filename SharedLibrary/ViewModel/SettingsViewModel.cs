@@ -18,6 +18,7 @@ using Dapper;
 using SharedLibrary.Provider;
 using System.Collections.Generic;
 using SharedLibrary.Commands;
+using Microsoft.Win32;
 
 namespace SharedLibrary.ViewModel
 {
@@ -420,15 +421,15 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 bool isHaveSevenZip = File.Exists(@"C:\Program Files\7-Zip\7z.exe");
                 if (isHaveWinrar)
                 {
-                    expandArchive = $@"""C:\Program Files\WinRAR\winrar.exe"" x -ibck {TempFolderWithFilePath} *.* {ProgramFolderWithFilePath}";
+                    expandArchive = $@"""C:\Program Files\WinRAR\winrar.exe"" x -ibck ""{TempFolderWithFilePath}"" *.* ""{ProgramFolderWithFilePath}""";
                 }
                 else if (isHaveSevenZip)
                 {
-                    expandArchive = $@"""C:\Program Files\7-Zip\7z.exe"" x {TempFolderWithFilePath} -o{ProgramFolderWithFilePath}";
+                    expandArchive = $@"""C:\Program Files\7-Zip\7z.exe"" x ""{TempFolderWithFilePath}"" -o""{ProgramFolderWithFilePath}""";
                 }
                 else
                 {
-                    expandArchive = $@"powershell Expand-Archive {TempFolderWithFilePath} -DestinationPath {ProgramFolderWithFilePath}";
+                    expandArchive = $@"powershell Expand-Archive ""{TempFolderWithFilePath}"" -DestinationPath ""{ProgramFolderWithFilePath}""";
                 }
 
                 Process pc = new Process();
@@ -436,9 +437,9 @@ $@"1. Файл должен скачиваться по ссылке из инт
 
                 string cdC = $@"/C cd C:\\";//подключимся к диску С
                 string timeout = $@"timeout /t 1"; //ожидание
-                string removeProgramFolderWithFilePath = $@"powershell Remove-Item {ProgramFolderWithFilePath}\\* -Recurse -Force"; //удалим текущую папку где существует exe, по сути откуда сейчас работаем
+                string removeProgramFolderWithFilePath = $@"powershell Remove-Item ""{ProgramFolderWithFilePath}\\*"" -Recurse -Force"; //удалим текущую папку где существует exe, по сути откуда сейчас работаем
                 string startProgramm = $@"start /D ""{ProgramFolderWithFilePath}\"" {CurrentProgramm}.exe"; //запуск программы
-                string removeTempFolder = $@"powershell Remove-Item {TempFolderPath} -Recurse -Force"; //удалим временную папку куда шла разархивация
+                string removeTempFolder = $@"powershell Remove-Item ""{TempFolderPath}"" -Recurse -Force"; //удалим временную папку куда шла разархивация
 
                 string licenseBackupCmd = string.Empty;
                 string licenseRestoreCmd = string.Empty;
@@ -662,21 +663,30 @@ $@"1. Файл должен скачиваться по ссылке из инт
 
         #endregion
 
-        #region Команда для Drag and Drop
+        #region Команда для выбора файла
 
-        private AsyncCommand previewDropCommand;
-        public AsyncCommand PreviewDropCommand => previewDropCommand ?? (previewDropCommand = new AsyncCommand(obj => DragAndDropAsync(obj)));
-        public async Task DragAndDropAsync(object obj)
+        private RelayCommand selectFileCommand;
+        public RelayCommand SelectFileCommand => selectFileCommand ?? (selectFileCommand = new RelayCommand(x => SelectFile()));
+        public void SelectFile()
         {
-            var list = (obj as DataObject).GetFileDropList();
-            if (list.Count == 0)
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                await Message("Ни один файл не был загружен");
-                return;
+                Filter = "Archive Files|*.rar;*.zip;"
+            };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string fileName = openFileDialog.FileName;
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    Task.Factory.StartNew(async () => await Message("Ни один файл не был загружен"));
+                    LinkData = string.Empty;
+                }
+                else
+                {
+                    LinkData = fileName;
+                }
+                UpdateCommand.RaiseCanExecuteChanged();
             }
-
-            LinkData = list[0];
-            UpdateCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

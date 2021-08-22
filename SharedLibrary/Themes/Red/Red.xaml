@@ -9,7 +9,7 @@
 
 
 
-    <Color x:Key="Red">#ff4081</Color>
+    <Color x:Key="Red">#ef5350</Color>
     <Color x:Key="LightWhite">#f5fffa</Color>
 
     <SolidColorBrush x:Key="DataGridRowSelected" Color="{StaticResource Red}" />

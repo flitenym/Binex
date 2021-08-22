@@ -1,13 +1,13 @@
 ﻿<UserControl
     x:Class="SharedLibrary.View.SettingsView"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
-    xmlns:bhv="clr-namespace:SharedLibrary.Behavior"  
+	xmlns:bhv="clr-namespace:SharedLibrary.Behavior"  
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -17,26 +17,48 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Textblock.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
             <!--  Данные для темы /////////Начало//////////  -->
             <Color x:Key="DarkButtonColor">#000000</Color>
-            <Color x:Key="BlueButtonColor">#60ccd9</Color>
-            <Color x:Key="GreenButtonColor">#00897b</Color>
-            <Color x:Key="RedButtonColor">#ff4081</Color>
             <Color x:Key="LightButtonColor">#f5f5f5</Color>
-
-            <SolidColorBrush x:Key="BlueButton" Color="{DynamicResource BlueButtonColor}" />
-            <SolidColorBrush x:Key="GreenButton" Color="{DynamicResource GreenButtonColor}" />
-            <SolidColorBrush x:Key="LightButton" Color="{DynamicResource LightButtonColor}" />
+            <Color x:Key="AmberButtonColor">#ffe082</Color>
+            <Color x:Key="BlueButtonColor">#42a5f5</Color>
+            <Color x:Key="CyanButtonColor">#26c6da</Color>
+            <Color x:Key="DeepOrangeButtonColor">#ff7043</Color>
+            <Color x:Key="DeepPurpleButtonColor">#7e57c2</Color>
+            <Color x:Key="GreenButtonColor">#66bb6a</Color>
+            <Color x:Key="IndigoButtonColor">#5c6bc0</Color>
+            <Color x:Key="LightBlueButtonColor">#29b6f6</Color>
+            <Color x:Key="LightGreenButtonColor">#9ccc65</Color>
+            <Color x:Key="LimeButtonColor">#d4e157</Color>
+            <Color x:Key="OrangeButtonColor">#ffa726</Color>
+            <Color x:Key="PinkButtonColor">#ec407a</Color>
+            <Color x:Key="PurpleButtonColor">#ab47bc</Color>
+            <Color x:Key="RedButtonColor">#ef5350</Color>
+            <Color x:Key="TealButtonColor">#26a69a</Color>
+            <Color x:Key="YellowButtonColor">#ffee58</Color>
             <SolidColorBrush x:Key="DarkButton" Color="{DynamicResource DarkButtonColor}" />
+            <SolidColorBrush x:Key="LightButton" Color="{DynamicResource LightButtonColor}" />
+            <SolidColorBrush x:Key="AmberButton" Color="{DynamicResource AmberButtonColor}" />
+            <SolidColorBrush x:Key="BlueButton" Color="{DynamicResource BlueButtonColor}" />
+            <SolidColorBrush x:Key="CyanButton" Color="{DynamicResource CyanButtonColor}" />
+            <SolidColorBrush x:Key="DeepOrangeButton" Color="{DynamicResource DeepOrangeButtonColor}" />
+            <SolidColorBrush x:Key="DeepPurpleButton" Color="{DynamicResource DeepPurpleButtonColor}" />
+            <SolidColorBrush x:Key="GreenButton" Color="{DynamicResource GreenButtonColor}" />
+            <SolidColorBrush x:Key="IndigoButton" Color="{DynamicResource IndigoButtonColor}" />
+            <SolidColorBrush x:Key="LightBlueButton" Color="{DynamicResource LightBlueButtonColor}" />
+            <SolidColorBrush x:Key="LightGreenButton" Color="{DynamicResource LightGreenButtonColor}" />
+            <SolidColorBrush x:Key="LimeButton" Color="{DynamicResource LimeButtonColor}" />
+            <SolidColorBrush x:Key="OrangeButton" Color="{DynamicResource OrangeButtonColor}" />
+            <SolidColorBrush x:Key="PinkButton" Color="{DynamicResource PinkButtonColor}" />
+            <SolidColorBrush x:Key="PurpleButton" Color="{DynamicResource PurpleButtonColor}" />
             <SolidColorBrush x:Key="RedButton" Color="{DynamicResource RedButtonColor}" />
+            <SolidColorBrush x:Key="TealButton" Color="{DynamicResource TealButtonColor}" />
+            <SolidColorBrush x:Key="YellowButton" Color="{DynamicResource YellowButtonColor}" />
             <!--  Данные для темы /////////Конец//////////  -->
-
         </ResourceDictionary>
     </UserControl.Resources>
-
     <Grid>
-        <ScrollViewer Style="{DynamicResource ScrollViewerStyle}" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch">
+        <ScrollViewer AllowDrop="True" Style="{DynamicResource ScrollViewerStyle}" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="250" MinWidth="222" />
@@ -57,7 +79,6 @@
                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                     Text="Программа"
                     TextAlignment="Center" />
-
                 <Grid Grid.Row="0" Grid.Column="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50" />
@@ -104,19 +125,18 @@
                         Text="{Binding LicenseInfo, Mode=OneWay}"
                         TextAlignment="Center" />
                 </Grid>
-
                 <TextBlock
-            Grid.Row="1"
-            Grid.Column="0"
-            Margin="5"
-            VerticalAlignment="Center"
-            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-            Text="Обновление"
-            TextAlignment="Center" />
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="5"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                    Text="Обновление"
+                    TextAlignment="Center" />
                 <Grid
-            Grid.Row="1"
-            Grid.Column="2"
-            Margin="5">
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition MinWidth="180" Width="*"/>
                         <ColumnDefinition MinWidth="200" Width="250"/>
@@ -127,61 +147,40 @@
                         <RowDefinition Height="45" />
                     </Grid.RowDefinitions>
                     <TextBox
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Grid.Row="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                materialDesign:HintAssist.Hint="Ссылка для скачивания"
-                AcceptsReturn="True"
-                ScrollViewer.CanContentScroll="True"
-                ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                Text="{Binding LinkData, UpdateSourceTrigger=PropertyChanged}"
-                TextWrapping="Wrap"
-                ToolTip="{Binding LinkRules, Mode=OneWay}"
-                ToolTipService.ShowDuration="12000" />
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        materialDesign:HintAssist.Hint="Ссылка для скачивания"
+                        AcceptsReturn="True"
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        Text="{Binding LinkData, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        ToolTip="{Binding LinkRules, Mode=OneWay}"
+                        ToolTipService.ShowDuration="12000" />
                     <Button
-                Grid.Row="1"
-                Grid.Column="2"
-                Margin="2"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Stretch"
-                Command="{Binding UpdateCommand}"
-                Content="Обновление программы"
-                Foreground="{DynamicResource PreWindowButtonForeground}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Margin="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding UpdateCommand}"
+                        Content="Обновление программы"
+                        Foreground="{DynamicResource PreWindowButtonForeground}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" />
                     <Grid Margin="5" Grid.Row="1" Grid.Column="0">
-                        <!--bhv:DropBehavior.PreviewDropCommand="{Binding PreviewDropCommand}"-->
-                        <Grid.Style>
-                            <Style TargetType="Grid">
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsHavePath}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
-                        <Rectangle AllowDrop="True" Fill="{DynamicResource DragAndDropRectangleFill}" RadiusX="5" RadiusY="5" Stroke="{DynamicResource DragAndDropForeground}" StrokeThickness="1" StrokeDashArray="3">
-                            <Rectangle.Triggers>
-                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                       RepeatBehavior="Forever" 
-                                       From="0" To="100"
-                                       Duration="0:0:12"
-                                       Storyboard.TargetProperty="StrokeDashOffset" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Rectangle.Triggers>
-                        </Rectangle>
-                        <TextBlock AllowDrop="True" Text="Перенесите файл" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Foreground="{DynamicResource DragAndDropForeground}"/>
+                        <Button
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Command="{Binding SelectFileCommand}"
+                            Content="Выбрать файл"
+                            Foreground="{DynamicResource PreWindowButtonForeground}"
+                            Style="{DynamicResource MaterialDesignRaisedButton}" />
                     </Grid>
-
                     <Grid Grid.Row="2" Grid.ColumnSpan="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="250"/>
@@ -189,110 +188,292 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox
-                    Grid.Column="0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsDataBaseUpdate}"
-                    Content="Не обновлять данные программы"
-                    ToolTip="Если флаг не указан, то обновится база данных"/>
+                            Grid.Column="0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding IsDataBaseUpdate}"
+                            Content="Не обновлять данные программы"
+                            ToolTip="Если флаг не указан, то обновится база данных"/>
                         <CheckBox
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsLicenseUpdate}"
-                    Content="Обновить лицензию"
-                    ToolTip="Если флаг указан, то лицензия обновится"/>
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding IsLicenseUpdate}"
+                            Content="Обновить лицензию"
+                            ToolTip="Если флаг указан, то лицензия обновится"/>
                     </Grid>
                 </Grid>
-
                 <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            Margin="5"
-            VerticalAlignment="Center"
-            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-            Text="Темы"
-            TextAlignment="Center" />
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="5"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                    Text="Темы"
+                    TextAlignment="Center" />
                 <ScrollViewer
-            Grid.Row="2"
-            Grid.Column="2"
-            HorizontalScrollBarVisibility="Auto"
-            Style="{DynamicResource ScrollViewerStyle}">
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    HorizontalScrollBarVisibility="Auto"
+                    Style="{DynamicResource ScrollViewerStyle}">
                     <StackPanel
-                Margin="0,0,20,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                Orientation="Horizontal">
+                        Margin="0,0,20,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        Orientation="Horizontal">
                         <Button
-                    x:Name="Dark"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Center"
-                    Command="{Binding GlobalThemeAcceptor}"
-                    CommandParameter="{Binding Name, ElementName=Dark}"
-                    Style="{DynamicResource ButtonZoom}">
+                            x:Name="Dark"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding GlobalThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Dark}"
+                            Style="{DynamicResource ButtonZoom}">
                             <materialDesign:PackIcon
-                        Width="50"
-                        Height="Auto"
-                        Foreground="{StaticResource DarkButton}"
-                        Kind="Drop" />
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource DarkButton}"
+                                Kind="Drop" />
                         </Button>
                         <Button
-                    x:Name="Light"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Center"
-                    Command="{Binding GlobalThemeAcceptor}"
-                    CommandParameter="{Binding Name, ElementName=Light}"
-                    Style="{DynamicResource ButtonZoom}">
+                            x:Name="Light"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding GlobalThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Light}"
+                            Style="{DynamicResource ButtonZoom}">
                             <materialDesign:PackIcon
-                        Width="50"
-                        Height="Auto"
-                        Foreground="{StaticResource LightButton}"
-                        Kind="Drop" />
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource LightButton}"
+                                Kind="Drop" />
                         </Button>
                         <Button
-                    x:Name="Blue"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Center"
-                    Command="{Binding ThemeAcceptor}"
-                    CommandParameter="{Binding Name, ElementName=Blue}"
-                    Style="{DynamicResource ButtonZoom}">
+                            x:Name="Red"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Red}"
+                            Style="{DynamicResource ButtonZoom}">
                             <materialDesign:PackIcon
-                        Width="50"
-                        Height="Auto"
-                        Foreground="{StaticResource BlueButton}"
-                        Kind="Drop" />
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource RedButton}"
+                                Kind="Drop" />
                         </Button>
                         <Button
-                    x:Name="Green"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Center"
-                    Command="{Binding ThemeAcceptor}"
-                    CommandParameter="{Binding Name, ElementName=Green}"
-                    Style="{DynamicResource ButtonZoom}">
+                            x:Name="Amber"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Amber}"
+                            Style="{DynamicResource ButtonZoom}">
                             <materialDesign:PackIcon
-                        Width="50"
-                        Height="Auto"
-                        Foreground="{StaticResource GreenButton}"
-                        Kind="Drop" />
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource AmberButton}"
+                                Kind="Drop" />
                         </Button>
                         <Button
-                    x:Name="Red"
-                    Width="auto"
-                    Height="auto"
-                    VerticalAlignment="Center"
-                    Command="{Binding ThemeAcceptor}"
-                    CommandParameter="{Binding Name, ElementName=Red}"
-                    Style="{DynamicResource ButtonZoom}">
+                            x:Name="Blue"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Blue}"
+                            Style="{DynamicResource ButtonZoom}">
                             <materialDesign:PackIcon
-                        Width="50"
-                        Height="Auto"
-                        Foreground="{StaticResource RedButton}"
-                        Kind="Drop" />
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource BlueButton}"
+                                Kind="Drop" />
                         </Button>
+                        <Button
+                            x:Name="Cyan"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Cyan}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource CyanButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="DeepOrange"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=DeepOrange}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource DeepOrangeButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="DeepPurple"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=DeepPurple}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource DeepPurpleButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Green"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Green}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource GreenButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Indigo"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Indigo}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource IndigoButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="LightBlue"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=LightBlue}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource LightBlueButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="LightGreen"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=LightGreen}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource LightGreenButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Lime"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Lime}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource LimeButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Orange"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Orange}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource OrangeButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Pink"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Pink}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource PinkButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Purple"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Purple}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource PurpleButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Teal"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Teal}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource TealButton}"
+                                Kind="Drop" />
+                        </Button>
+                        <Button
+                            x:Name="Yellow"
+                            Width="auto"
+                            Height="auto"
+                            VerticalAlignment="Center"
+                            Command="{Binding ThemeAcceptor}"
+                            CommandParameter="{Binding Name, ElementName=Yellow}"
+                            Style="{DynamicResource ButtonZoom}">
+                            <materialDesign:PackIcon
+                                Width="50"
+                                Height="Auto"
+                                Foreground="{StaticResource YellowButton}"
+                                Kind="Drop" />
+                        </Button>
+                        
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

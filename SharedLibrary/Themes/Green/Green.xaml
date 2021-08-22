@@ -3,16 +3,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Teal.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.LightGreen.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Green.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Green.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 
 
-    <Color x:Key="Green">#00897b</Color>
+    <Color x:Key="Green">#66bb6a</Color>
+    <Color x:Key="LightWhite">#f5fffa</Color>
 
     <SolidColorBrush x:Key="DataGridRowSelected" Color="{StaticResource Green}" />
-    <SolidColorBrush x:Key="AfterCloseWindowButtonForeground" Color="{StaticResource Green}" />
+    <SolidColorBrush x:Key="AfterCloseWindowButtonForeground" Color="{StaticResource LightWhite}" />
     <SolidColorBrush x:Key="GridSplitterBackground" Color="{StaticResource Green}" />
 
     <Style

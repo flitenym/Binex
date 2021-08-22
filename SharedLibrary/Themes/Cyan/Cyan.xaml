@@ -3,18 +3,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Blue.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Blue.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Cyan.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Cyan.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 
 
-    <Color x:Key="Blue">#42a5f5</Color>
+    <Color x:Key="Cyan">#26c6da</Color>
     <Color x:Key="LightWhite">#f5fffa</Color>
 
-    <SolidColorBrush x:Key="DataGridRowSelected" Color="{StaticResource Blue}" />
+    <SolidColorBrush x:Key="DataGridRowSelected" Color="{StaticResource Cyan}" />
     <SolidColorBrush x:Key="AfterCloseWindowButtonForeground" Color="{StaticResource LightWhite}" />
-    <SolidColorBrush x:Key="GridSplitterBackground" Color="{StaticResource Blue}" />
+    <SolidColorBrush x:Key="GridSplitterBackground" Color="{StaticResource Cyan}" />
 
     <Style
         x:Key="ActionButton"
