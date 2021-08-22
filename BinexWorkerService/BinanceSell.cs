@@ -192,6 +192,7 @@ namespace BinexWorkerService
 
             if (isDustSell || isCurrenciesSell)
             {
+                // получаем информацию по фильтрам
                 (bool isSuccessGetExchangeInfo, BinanceExchangeInfo exchangeInfo) = await BinanceApi.GetExchangeInfo(logger: logger);
 
                 if (!isSuccessGetExchangeInfo)
@@ -228,6 +229,14 @@ namespace BinexWorkerService
 
                 if (isCurrenciesSell)
                 {
+                    // т.к. информация по валютам пришла без BNB и перевод пыли производится в BNB, то получем его и включим в обработку
+                    (bool isSuccessBNB, (string, decimal, bool) currencyBNB) = await BinanceApi.GetСurrencyAsync(exchangeInfo, StaticClass.BNB, logger: logger);
+
+                    if (isSuccessBNB && currencyBNB != default)
+                    {
+                        currencies.Add(currencyBNB);
+                    }
+
                     foreach (var currency in currencies.Where(x => x.isDustCurrency == false))
                     {
                         // если цена между валютой текущей и USDT существует, то только тогда продадим

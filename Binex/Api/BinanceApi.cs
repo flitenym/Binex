@@ -86,7 +86,7 @@ namespace Binex.Api
 
             //требуется поставить на первое место BTC, т.к. при продаже возможны переводы в BTC и нам продажа снова и снова будет не очень
             var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset == StaticClass.BTC).Concat(
-                result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC)).ToList();
+                result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC && x.Asset != StaticClass.BNB)).ToList();
 
             List<(string, decimal, bool)> currenciesData = new List<(string, decimal, bool)>();
 
@@ -105,6 +105,53 @@ namespace Binex.Api
             }
 
             return (true, currenciesData);
+        }
+
+        /// <summary>
+        /// Получение информации по криптовалюте
+        /// </summary>
+        public static async Task<(bool IsSuccess, (string Asset, decimal Quantity, bool IsDust) Currency)> GetСurrencyAsync(BinanceExchangeInfo exchangeInfo, string asset, Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync(logger: logger);
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, default);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.General.GetAccountInfoAsync();
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, default);
+            }
+
+            var currency = result.Data.Balances.FirstOrDefault(x => x.Free != 0 && x.Asset == asset);
+
+            if (currency != null)
+            {
+                (decimal resultQuantity, bool isDust) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free, logger);
+
+                if (resultQuantity == default(decimal))
+                {
+                    return (true, default);
+                }
+
+                await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Free}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
+
+                return (true, (currency.Asset, resultQuantity, isDust));
+            }
+
+            return (true, default);
         }
 
         /// <summary>
@@ -523,7 +570,8 @@ namespace Binex.Api
         {
             List<string> assets = new List<string>();
 
-            assets.AddRange(currencies.Where(x => x.isDustCurrency && x.assetCurrency != StaticClass.BNB).Select(y => y.assetCurrency));
+            // получаем валюты, которые были определены как Пыль
+            assets.AddRange(currencies.Where(x => x.isDustCurrency).Select(y => y.assetCurrency));
 
             if (!assets.Any())
             {
