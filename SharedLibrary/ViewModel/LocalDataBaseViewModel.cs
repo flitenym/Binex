@@ -163,6 +163,7 @@ namespace SharedLibrary.ViewModel
             {
                 findText = value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(FindText)));
+                FilterDataViewCommand.Execute(null);
             }
         }
 
@@ -393,9 +394,9 @@ namespace SharedLibrary.ViewModel
 
         #region Фильтрация таблицы
 
-        private AsyncCommand filterDataViewCommand;
+        private RelayCommand filterDataViewCommand;
 
-        public AsyncCommand FilterDataViewCommand => filterDataViewCommand ?? (filterDataViewCommand = new AsyncCommand(x => FilterDataView()));
+        public RelayCommand FilterDataViewCommand => filterDataViewCommand ?? (filterDataViewCommand = new RelayCommand(x => FilterDataView()));
 
         private void Filter(string query)
         {
@@ -403,15 +404,15 @@ namespace SharedLibrary.ViewModel
             PropertyChanged(this, new PropertyChangedEventArgs(nameof(TableDataView)));
         }
 
-        private async Task FilterDataView()
+        private void FilterDataView()
         {
             if (!string.IsNullOrEmpty(FindText) && FindVisibility == Visibility.Visible && !string.IsNullOrEmpty(TableColumn?.ColumnName))
             {
-                await Task.Factory.StartNew(() => Filter($"Convert([{TableColumn.ColumnName}], System.String) LIKE '%{FindText}%'"));
+                Filter($"Convert([{TableColumn.ColumnName}], System.String) LIKE '%{FindText}%'");
             }
             else
             {
-                await Task.Factory.StartNew(() => Filter(string.Empty));
+                Filter(string.Empty);
             }
         }
 
@@ -488,6 +489,8 @@ namespace SharedLibrary.ViewModel
                 TableData = await SQLExecutor.SelectExecutorAsync(SelectedModelType, SelectedModelName);
                 TableData.AcceptChanges();
 
+                var columnName = TableColumn?.ColumnName;
+
                 TableColumns.Clear();
 
                 for (int i = 0; i < TableData.Columns.Count; i++)
@@ -500,7 +503,7 @@ namespace SharedLibrary.ViewModel
                     }
                 }
 
-                TableColumn = TableColumns.FirstOrDefault();
+                TableColumn = TableColumns.FirstOrDefault(x=>x.ColumnName == columnName) ?? TableColumns.FirstOrDefault();
             }
 
             FilterDataViewCommand.Execute(null);

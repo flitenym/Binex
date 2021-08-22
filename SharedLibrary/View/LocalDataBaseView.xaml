@@ -16,7 +16,6 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Textblock.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -238,7 +237,9 @@
                         </Grid.ColumnDefinitions>
                         <ComboBox
                             Grid.Column="0"
-                            Margin="5,0,5,0"
+                            Margin="5,0,5,7"
+                            Height="25"
+                            VerticalAlignment="Bottom"
                             ItemsSource="{Binding TableColumns, Mode=TwoWay}"
                             SelectedValue="{Binding TableColumn, Mode=TwoWay}"
                             IsSynchronizedWithCurrentItem ="True">
@@ -261,11 +262,6 @@
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                             Text="{Binding FindText, UpdateSourceTrigger=PropertyChanged}"
                             AcceptsReturn="False">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="KeyDown" >
-                                    <i:InvokeCommandAction Command="{Binding FilterDataViewCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
                         </TextBox>
                         <Button
                             Grid.Column="1"
