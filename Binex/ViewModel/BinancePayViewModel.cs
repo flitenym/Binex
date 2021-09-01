@@ -185,8 +185,6 @@ GROUP BY UserID
 ");
             List<PayInfo> resultPayInfo = new List<PayInfo>();
 
-            NumberFormatInfo setPrecision = new NumberFormatInfo() { NumberDecimalDigits = 8 };
-
             foreach (var payInfo in paysInfo)
             {
                 if (payInfo.IsPaid) { continue; }
@@ -218,7 +216,6 @@ GROUP BY UserID
                     percent /= 100;
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
-                    payInfoData.UsdtToPay = decimal.Parse(payInfoData.UsdtToPay.Value.ToString("N", setPrecision).Replace('.', ','));
 
                     resultPayInfo.Add(payInfoData);
                 }
@@ -356,8 +353,12 @@ GROUP BY UserID
 
             var numberPay = await SQLExecutor.SelectFirstExecutorAsync<int?>("SELECT NumberPay FROM PayHistory ORDER BY NumberPay DESC LIMIT 1") ?? 1;
 
+            NumberFormatInfo setPrecision = new NumberFormatInfo() { NumberDecimalDigits = 6, NumberGroupSeparator = "", NumberDecimalSeparator = "." };
+
             foreach (var payInfo in PayInfoCollection)
             {
+                payInfo.UsdtToPay = decimal.Parse(payInfo.UsdtToPay.Value.ToString("N", setPrecision).Replace('.', ','));
+
                 if (payInfo.IsSelected && !string.IsNullOrEmpty(payInfo.Address) && payInfo.UsdtToPay.HasValue && payInfo.UsdtToPay >= network.WithdrawMin)
                 {
                     var isSuccessWithrawal = await BinanceApi.WithdrawalPlacedAsync(StaticClass.USDT, StaticClass.USDT, payInfo.UsdtToPay.Value, payInfo.Address, network.Network);
