@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -184,6 +185,8 @@ GROUP BY UserID
 ");
             List<PayInfo> resultPayInfo = new List<PayInfo>();
 
+            NumberFormatInfo setPrecision = new NumberFormatInfo() { NumberDecimalDigits = 8 };
+
             foreach (var payInfo in paysInfo)
             {
                 if (payInfo.IsPaid) { continue; }
@@ -215,8 +218,7 @@ GROUP BY UserID
                     percent /= 100;
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
-
-                    payInfoData.UsdtToPay = Math.Round(payInfoData.UsdtToPay.Value, 8, MidpointRounding.ToZero);
+                    payInfoData.UsdtToPay = decimal.Parse(payInfoData.UsdtToPay.Value.ToString("N", setPrecision).Replace('.', ','));
 
                     resultPayInfo.Add(payInfoData);
                 }
