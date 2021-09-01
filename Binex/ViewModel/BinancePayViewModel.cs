@@ -216,6 +216,8 @@ GROUP BY UserID
 
                     payInfoData.UsdtToPay = (decimal)hungPercent * (decimal)percent;
 
+                    payInfoData.UsdtToPay = Math.Round(payInfoData.UsdtToPay.Value, 8, MidpointRounding.ToZero);
+
                     resultPayInfo.Add(payInfoData);
                 }
             }
