@@ -19,6 +19,8 @@ using SharedLibrary.Provider;
 using System.Collections.Generic;
 using SharedLibrary.Commands;
 using Microsoft.Win32;
+using System.ServiceProcess;
+using SharedLibrary.Helper;
 
 namespace SharedLibrary.ViewModel
 {
@@ -464,7 +466,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
                     serviceRestartCmd = $@"&& powershell -command ""Restart-Service {serviceName} -Force""";
                 }
 
-                pc.StartInfo.Arguments = $"{cdC} {licenseBackupCmd} {dataBaseBackupCmd} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout} {licenseRestoreCmd} {dataBaseRestoreCmd} && {startProgramm} && {removeTempFolder} {serviceRestartCmd}";
+                pc.StartInfo.Arguments = $"{cdC} {licenseBackupCmd} {dataBaseBackupCmd} && {removeProgramFolderWithFilePath} && {expandArchive} && {timeout} {licenseRestoreCmd} {dataBaseRestoreCmd} && {startProgramm}";
                 pc.Start();
 
                 await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -483,6 +485,18 @@ $@"1. Файл должен скачиваться по ссылке из инт
         /// </summary>
         public async Task UpdateProgramAsync()
         {
+            // попросим удалить сервис.
+            string BinexServiceName = (await HelperMethods.GetByKeyInDBAsync(InfoKeys.BinexServiceNameKey))?.Value;
+            if (!string.IsNullOrEmpty(BinexServiceName))
+            {
+                ServiceController service = new ServiceController(BinexServiceName);
+                if (service?.Status != null)
+                {
+                    await HelperMethods.Message($"Удалите сервис {BinexServiceName}");
+                    return;
+                }
+            }
+
             ProgramFolderWithFilePath = AssemblyDirectory;
             
             Stream contentStream = null;
