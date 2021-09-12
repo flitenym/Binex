@@ -124,6 +124,22 @@ namespace Binex.ViewModel
 
         #endregion
 
+        #region Баланс пользователя
+
+        private string selectText = "Снять выделение со всех";
+
+        public string SelectText
+        {
+            get { return selectText; }
+            set
+            {
+                selectText = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectText)));
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Вычисление данные в таблице
@@ -430,6 +446,48 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
         private void IsSelected()
         {
             SumAllUsers = PayInfoCollection.Any() ? PayInfoCollection.Where(x => x.IsSelected && !string.IsNullOrEmpty(x.Address) && x.UsdtToPay.HasValue).Sum(x => x.UsdtToPay) : null;
+
+            if (PayInfoCollection.Any(x => !x.IsSelected))
+            {
+                SelectText = "Выделить всех";
+            }
+            else
+            {
+                SelectText = "Снять выделение со всех";
+            }
+        }
+
+        #endregion
+
+        #region Команда для выделений списка
+
+        private AsyncCommand selectCommand;
+
+        public AsyncCommand SelectCommand => selectCommand ?? (selectCommand = new AsyncCommand(x => SelectAsync()));
+
+        private void SelectAllItems(bool valueItem)
+        {
+            foreach (var payInfo in PayInfoCollection)
+            {
+                payInfo.IsSelected = valueItem;
+            }
+            PayInfoCollection = new ObservableCollection<PayInfo>(PayInfoCollection);
+        }
+
+        private async Task SelectAsync()
+        {
+            if (PayInfoCollection.Any(x => !x.IsSelected))
+            {
+                SelectAllItems(true);
+                SelectText = "Снять выделение со всех";
+                await HelperMethods.Message($"Все выделены");
+            }
+            else
+            {
+                SelectAllItems(false);
+                SelectText = "Выделить всех";
+                await HelperMethods.Message($"Со всех снято выделение");
+            }
         }
 
         #endregion
