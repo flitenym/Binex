@@ -59,7 +59,38 @@ namespace Binex.Api
         /// <summary>
         /// Получение всех криптовалют у пользователя, с балансом > 0, и в первую очередь идет BTC, и без USDT
         /// </summary>
-        public static async Task<(bool IsSuccess, List<(string Asset, decimal quantity, bool isDust)> Currencies)> GetAllCurrenciesWithoutUSDTAsync(BinanceExchangeInfo exchangeInfo, Logger logger = null)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesWithout_USDT_BTC_BNB_Async(BinanceExchangeInfo exchangeInfo, Logger logger = null)
+        {
+            var apiData = await GetApiDataAsync(logger: logger);
+
+            if (!apiData.IsSuccess)
+            {
+                return (false, null);
+            }
+
+            var options = new BinanceClientOptions()
+            {
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
+                AutoTimestamp = false
+            };
+
+            var client = new BinanceClient(options);
+
+            var result = await client.General.GetAccountInfoAsync();
+
+            if (result.ResponseStatusCode != SuccessCode)
+            {
+                await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+                return (false, null);
+            }
+
+            //требуется поставить на первое место BTC, т.к. при продаже возможны переводы в BTC и нам продажа снова и снова будет не очень
+            var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC && x.Asset != StaticClass.BNB).ToList();
+
+            return (true, currencies);
+        }
+
+        public static async Task<(bool IsSuccess, List<(string Asset, decimal Quantity, bool IsDust)> Currencies)> GetAllCurrenciesWithoutUSDTWithQuantityAsync(BinanceExchangeInfo exchangeInfo, Logger logger = null)
         {
             var apiData = await GetApiDataAsync(logger: logger);
 
@@ -635,6 +666,20 @@ namespace Binex.Api
             {
                 logger?.Trace("Проверку на LOT_SIZE прошло");
 
+                if (fromAsset == StaticClass.BTC)
+                {
+                    if (resultQuantity >= symbolFilterMinNotional.MinNotional)
+                    {
+                        logger?.Trace("Проверку на MIN_NOTIONAL прошло");
+                        return (resultQuantity, false);
+                    }
+                    else
+                    {
+                        logger?.Trace("Проверку на MIN_NOTIONAL не прошло");
+                        return (resultQuantity, true);
+                    }
+                }
+
                 (bool isSuccessGetAverageInfo, decimal averagePrice) = await GetAverageInfo(fromAsset, StaticClass.BTC, logger);
 
                 if (!isSuccessGetAverageInfo)
@@ -643,7 +688,7 @@ namespace Binex.Api
                 }
 
                 logger?.Trace($"ResultQuantity: {resultQuantity}, AveragePrice: {averagePrice}, MinNotional: {symbolFilterMinNotional.MinNotional}");
-                if (resultQuantity * averagePrice >= symbolFilterMinNotional.MinNotional)
+                if ((resultQuantity * averagePrice) * 0.98m >= symbolFilterMinNotional.MinNotional)
                 {
                     logger?.Trace("Проверку на MIN_NOTIONAL прошло");
                     return (resultQuantity, false);

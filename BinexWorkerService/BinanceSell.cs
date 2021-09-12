@@ -192,7 +192,7 @@ namespace BinexWorkerService
 
             if (isDustSell || isCurrenciesSell)
             {
-                // получаем информацию по фильтрам
+                // получаем информацию по фильтрам, они статичны и достаточно 1 раз получить
                 (bool isSuccessGetExchangeInfo, BinanceExchangeInfo exchangeInfo) = await BinanceApi.GetExchangeInfo(logger: logger);
 
                 if (!isSuccessGetExchangeInfo)
@@ -201,85 +201,56 @@ namespace BinexWorkerService
                     return false;
                 }
 
-                (bool isSuccessGetAllCurrencies, List<(string assetCurrency, decimal quantityCurrency, bool isDustCurrency)> currencies) = await BinanceApi.GetAllCurrenciesWithoutUSDTAsync(exchangeInfo, logger: logger);
+                // получим все валюты в балансе аккаунта, кроме USDT
+                (bool isSuccessGetAllCurrencies, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesWithout_USDT_BTC_BNB_Async(exchangeInfo, logger: logger);
 
                 if (!isSuccessGetAllCurrencies)
                 {
                     return false;
                 }
 
-                #region Перевод монет с маленьким балансом в BNB
-
-                if (isDustSell)
-                {
-                    // перевод мелких монет в BNB
-                    (bool isSuccessTransferDust, string messageTransferDust) = await BinanceApi.TransferDustAsync(currencies, logger: logger);
-
-                    if (!string.IsNullOrEmpty(messageTransferDust))
-                    {
-                        isDustSellEmail = $"<p>{messageTransferDust}</p>";
-
-                        logger?.Trace($"{messageTransferDust}");
-                    }
-                }
-
-                #endregion
-
                 #region Продажа криптовалют
 
                 if (isCurrenciesSell)
                 {
-                    // т.к. информация по валютам пришла без BNB и перевод пыли производится в BNB, то получем его и включим в обработку
-                    (bool isSuccessBNB, (string, decimal, bool) currencyBNB) = await BinanceApi.GetСurrencyAsync(exchangeInfo, StaticClass.BNB, logger: logger);
-
-                    if (isSuccessBNB && currencyBNB != default)
+                    // пройдем по всем валютам, которые есть на аккаунте и попробуем продать их
+                    foreach(var currency in currencies)
                     {
-                        currencies.Add(currencyBNB);
+                        await SellCoin(currenciesInfo, currency.Asset, exchangeInfo, logger);
                     }
+                }
 
-                    foreach (var currency in currencies.Where(x => x.isDustCurrency == false))
+                #endregion
+
+                #region Перевод монет с маленьким балансом в BNB
+
+                if (isDustSell)
+                {
+                    (bool isSuccessGetAllAfterSellCurrencies, List<(string asset, decimal quantity, bool isDust)> currenciesAfterSell) = await BinanceApi.GetAllCurrenciesWithoutUSDTWithQuantityAsync(exchangeInfo, logger: logger);
+
+                    if (isSuccessGetAllAfterSellCurrencies)
                     {
-                        // если цена между валютой текущей и USDT существует, то только тогда продадим
-                        (bool isSuccessPriceUSDT, BinancePrice priceUSDT) = await BinanceApi.GetPrice(currency.assetCurrency, StaticClass.USDT, logger: logger);
+                        // перевод мелких монет в BNB
+                        (bool isSuccessTransferDust, string messageTransferDust) = await BinanceApi.TransferDustAsync(currenciesAfterSell, logger: logger);
 
-                        if (isSuccessPriceUSDT && !string.IsNullOrEmpty(priceUSDT.Symbol))
+                        if (!string.IsNullOrEmpty(messageTransferDust))
                         {
-                            logger?.Trace("Продажа по USDT");
-                            bool isSuccessSellUSDT = await BinanceApi.SellCoinAsync(exchangeInfo, currency.quantityCurrency, currency.assetCurrency, StaticClass.USDT, logger: logger);
+                            isDustSellEmail = $"<p>{messageTransferDust}</p>";
 
-                            if (isSuccessSellUSDT)
-                            {
-                                currenciesInfo.Add(new CurrencyInfo() { Asset = currency.assetCurrency, IsSuccess = true, IsSuccessSell = isSuccessSellUSDT, IsWasNeedToBTC = false });
-                            }
-                        }
-                        else
-                        {
-                            logger?.Trace("Продажа по BTC");
-                            // в случае если у нас есть по BTC, тогда нам нужно перевести в BTC, а затем получившийся BTC продать в USDT
-                            // GetAllCurrenciesAsync - ставит на первое место BTC, поэтому можем смело переводить и продавать
-                            (bool isSuccessPriceBTC, BinancePrice priceBTC) = await BinanceApi.GetPrice(currency.assetCurrency, StaticClass.BTC, logger: logger);
-                            if (isSuccessPriceBTC)
-                            {
-                                // в случае если транзакцию нам нужно выполнять по продаже BTC, может она работает в течении секунды, поставим лучше ожидание
-                                await Task.Delay(2000);
-                                // получим BTC текущего кошелька и попробуем продать его
-                                (bool isSuccessBTC, List<BinanceBalance> curreniesBTC) = await BinanceApi.GetGeneralAllCurrenciesByAssetAsync(StaticClass.BTC, logger: logger);
-
-                                if (isSuccessBTC && curreniesBTC.Any())
-                                {
-                                    var currencyBTC = curreniesBTC.First();
-                                    bool isSuccessSellBTC = await BinanceApi.SellCoinAsync(exchangeInfo, currencyBTC.Free, currencyBTC.Asset, StaticClass.BTC, logger: logger);
-                                    if (isSuccessSellBTC)
-                                    {
-                                        currenciesInfo.Add(new CurrencyInfo() { Asset = currency.assetCurrency, IsSuccess = true, IsSuccessSell = isSuccessSellBTC, IsWasNeedToBTC = true });
-                                    }
-                                }
-                            }
+                            logger?.Trace($"{messageTransferDust}");
                         }
                     }
                 }
 
                 #endregion
+
+                if (isCurrenciesSell)
+                {
+                    // т.к. информация по валютам пришла без BNB и перевод пыли производится в BNB, то получем его и включим в обработку.
+                    await SellCoin(currenciesInfo, StaticClass.BNB, exchangeInfo, logger);
+                    // т.к. продажи были и по BTC, то и его продадим.
+                    await SellCoin(currenciesInfo, StaticClass.BTC, exchangeInfo, logger);
+                }
             }
 
             #region Отправка уведомлений
@@ -300,6 +271,31 @@ namespace BinexWorkerService
             #endregion
 
             return false;
+        }
+
+        private async Task SellCoin(List<CurrencyInfo> currenciesInfo, string currencyAsset, BinanceExchangeInfo exchangeInfo, Logger logger)
+        {
+            // получим валюту и определим пыль или нет, если нет, то сразу продадим ее
+            (bool isSuccessCurrency, (string asset, decimal quantity, bool isDust) currencyInfo) = await BinanceApi.GetСurrencyAsync(exchangeInfo, currencyAsset, logger: logger);
+
+            if (!isSuccessCurrency)
+            {
+                return;
+            }
+
+            if (!currencyInfo.isDust)
+            {
+                bool isSuccessSellUSDT = await BinanceApi.SellCoinAsync(exchangeInfo, currencyInfo.quantity, currencyInfo.asset, StaticClass.USDT, logger: logger);
+
+                if (isSuccessSellUSDT)
+                {
+                    currenciesInfo.Add(new CurrencyInfo() { Asset = currencyInfo.asset, IsSuccess = true, IsSuccessSell = isSuccessSellUSDT, IsWasNeedToBTC = false });
+                }
+                else if (currencyInfo.asset != StaticClass.BTC)
+                {
+                    bool isSuccessSellBTC = await BinanceApi.SellCoinAsync(exchangeInfo, currencyInfo.quantity, currencyInfo.asset, StaticClass.BTC, logger: logger);
+                }
+            }
         }
 
         private string CreateEmailBody(List<CurrencyInfo> currenciesInfo, string transferSpot, string transferDust)
