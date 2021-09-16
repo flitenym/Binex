@@ -57,9 +57,9 @@ namespace Binex.Api
         }
 
         /// <summary>
-        /// Получение всех криптовалют у пользователя, с балансом > 0, и в первую очередь идет BTC, и без USDT
+        /// Получение всех криптовалют у пользователя, с балансом > 0 без USDT и BNB
         /// </summary>
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesWithout_USDT_BTC_BNB_Async(BinanceExchangeInfo exchangeInfo, Logger logger = null)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesWithout_USDT_BNB_Async(BinanceExchangeInfo exchangeInfo, Logger logger = null)
         {
             var apiData = await GetApiDataAsync(logger: logger);
 
@@ -84,8 +84,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            //требуется поставить на первое место BTC, т.к. при продаже возможны переводы в BTC и нам продажа снова и снова будет не очень
-            var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC && x.Asset != StaticClass.BNB).ToList();
+            var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BNB).ToList();
 
             return (true, currencies);
         }
@@ -123,16 +122,13 @@ namespace Binex.Api
 
             foreach (var currency in currencies)
             {
-                (decimal resultQuantity, bool isDust) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free, logger);
+                (bool isSuccessGetQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, logger);
 
-                if (resultQuantity == default(decimal))
+                if (isSuccessGetQuantity)
                 {
-                    continue;
+                    await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Free}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
+                    currenciesData.Add((currency.Asset, resultQuantity, isDust));
                 }
-
-                await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Free}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
-
-                currenciesData.Add((currency.Asset, resultQuantity, isDust));
             }
 
             return (true, currenciesData);
@@ -141,7 +137,7 @@ namespace Binex.Api
         /// <summary>
         /// Получение информации по криптовалюте
         /// </summary>
-        public static async Task<(bool IsSuccess, (string Asset, decimal Quantity, bool IsDust) Currency)> GetСurrencyAsync(BinanceExchangeInfo exchangeInfo, string asset, Logger logger = null)
+        public static async Task<(bool IsSuccess, (string FromAsset, string ToAsset, decimal Quantity, bool IsDust) Currency)> GetСurrencyAsync(BinanceExchangeInfo exchangeInfo, string asset, Logger logger = null)
         {
             var apiData = await GetApiDataAsync(logger: logger);
 
@@ -170,16 +166,16 @@ namespace Binex.Api
 
             if (currency != null)
             {
-                (decimal resultQuantity, bool isDust) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free, logger);
+                (bool isSuccessQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, logger);
 
-                if (resultQuantity == default(decimal))
+                if (!isSuccessQuantity)
                 {
                     return (true, default);
                 }
 
-                await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Free}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
+                await HelperMethods.Message($"Для {currency.Asset} ({toAsset}) количество определилось как {resultQuantity} из {currency.Free}({currency.Free }), {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
 
-                return (true, (currency.Asset, resultQuantity, isDust));
+                return (true, (currency.Asset, toAsset, resultQuantity, isDust));
             }
 
             return (true, default);
@@ -641,6 +637,27 @@ namespace Binex.Api
             return (true, "Перевод монет с маленьким балансом выполнен.");
         }
 
+        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, decimal quantity, Logger logger = null)
+        {
+            (bool isSuccessGetQuantityUSDT, decimal resultQuantityUsdt, bool isDustUsdt, string toAssetUsdt) = await GetQuantity(exchangeInfo, fromAsset, StaticClass.USDT, quantity, logger);
+
+            if (isSuccessGetQuantityUSDT && !string.IsNullOrEmpty(toAssetUsdt))
+            {
+                return (true, resultQuantityUsdt, isDustUsdt, toAssetUsdt);
+            }
+            else if (string.IsNullOrEmpty(toAssetUsdt))
+            {
+                (bool isSuccessGetQuantityAnother, decimal resultQuantityAnother, bool isDustAnother, string toAssetAnother) = await GetQuantity(exchangeInfo, fromAsset, null, quantity, logger);
+
+                if (isSuccessGetQuantityAnother)
+                {
+                    return (true, resultQuantityAnother, isDustAnother, toAssetAnother);
+                }
+            }
+
+            return default;
+        }
+
         /// <summary>
         /// Получение количества монет, которое удовлетворяет правилам выставления ордера на маркет
         /// </summary>
@@ -648,55 +665,67 @@ namespace Binex.Api
         /// <param name="asset">Валюта</param>
         /// <param name="quantity">Количество для продажи</param>
         /// <returns></returns>
-        public static async Task<(decimal Quantity, bool IsDust)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, decimal quantity, Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, Logger logger = null)
         {
-            var symbolFilterLotSize = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.LotSizeFilter;
-            var symbolFilterMinNotional = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset)?.MinNotionalFilter;
-
-            if (symbolFilterLotSize == null)
+            BinanceSymbol symbolInfo = null;
+            if (string.IsNullOrEmpty(toAsset))
             {
-                return default;
+                symbolInfo = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset);
+            }
+            else
+            {
+                symbolInfo = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset && x.QuoteAsset == toAsset);
             }
 
-            decimal resultQuantity = Math.Round(quantity, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize / 1.0000000000m)[3])[2], MidpointRounding.ToNegativeInfinity);
+            if (symbolInfo == null)
+            {
+                logger.Trace($"Не найдены фильтры для {fromAsset}");
+                return (false, default(decimal), false, null);
+            }
+
+            var symbolFilterLotSize = symbolInfo.LotSizeFilter;
+            var symbolFilterMinNotional = symbolInfo.MinNotionalFilter;
+
+            (bool isSuccessGetPriceInfo, BinancePrice price) = await GetPrice(fromAsset, symbolInfo.QuoteAsset, logger);
+
+            if (!isSuccessGetPriceInfo)
+            {
+                logger.Trace($"Не удалось получить цену для {fromAsset}{symbolInfo.QuoteAsset}");
+                return (false, default(decimal), false, symbolInfo.QuoteAsset);
+            }
+
+            // преобразует число, например 304.012334 если stepsize = 0.001 в 304.012
+            decimal resultQuantity = Math.Round(quantity * price.Price, BitConverter.GetBytes(decimal.GetBits(symbolFilterLotSize.StepSize / 1.0000000000m)[3])[2], MidpointRounding.ToNegativeInfinity)
+                + new decimal(0, 0, 0, false, (byte)symbolInfo.BaseAssetPrecision);
 
             logger?.Trace($"ResultQuantity: {resultQuantity}, StepSize: {symbolFilterLotSize.StepSize}, MinQuantity: {symbolFilterLotSize.MinQuantity}, MaxQuantity: {symbolFilterLotSize.MaxQuantity}");
+
+            if (resultQuantity == 0)
+            {
+                logger.Trace($"Полученное значение для {fromAsset} = 0");
+                return (true, resultQuantity, true, symbolInfo.QuoteAsset);
+            }
 
             if (resultQuantity >= symbolFilterLotSize.MinQuantity && resultQuantity <= symbolFilterLotSize.MaxQuantity)
             {
                 logger?.Trace("Проверку на LOT_SIZE прошло");
 
-                if (fromAsset == StaticClass.BTC)
-                {
-                    if (resultQuantity >= symbolFilterMinNotional.MinNotional)
-                    {
-                        logger?.Trace("Проверку на MIN_NOTIONAL прошло");
-                        return (resultQuantity, false);
-                    }
-                    else
-                    {
-                        logger?.Trace("Проверку на MIN_NOTIONAL не прошло");
-                        return (resultQuantity, true);
-                    }
-                }
-
-                (bool isSuccessGetAverageInfo, decimal averagePrice) = await GetAverageInfo(fromAsset, StaticClass.BTC, logger);
-
-                if (!isSuccessGetAverageInfo)
+                if (!isSuccessGetPriceInfo)
                 {
                     return default;
                 }
 
-                logger?.Trace($"ResultQuantity: {resultQuantity}, AveragePrice: {averagePrice}, MinNotional: {symbolFilterMinNotional.MinNotional}");
-                if ((resultQuantity * averagePrice) * 0.98m >= symbolFilterMinNotional.MinNotional)
+                logger?.Trace($"ResultQuantity: {resultQuantity}, Price: {price.Price}, MinNotional: {symbolFilterMinNotional.MinNotional}");
+
+                if (resultQuantity * 1.05m < symbolFilterMinNotional.MinNotional)
                 {
-                    logger?.Trace("Проверку на MIN_NOTIONAL прошло");
-                    return (resultQuantity, false);
+                    logger?.Trace("Проверку на MIN_NOTIONAL не прошло");
+                    return (true, resultQuantity, true, symbolInfo.QuoteAsset);
                 }
                 else
                 {
-                    logger?.Trace("Проверку на MIN_NOTIONAL не прошло");
-                    return (resultQuantity, true);
+                    logger?.Trace("Проверку на MIN_NOTIONAL прошло");
+                    return (true, resultQuantity, false, symbolInfo.QuoteAsset);
                 }
             }
 

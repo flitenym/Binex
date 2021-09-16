@@ -193,6 +193,8 @@ namespace BinexWorkerService
 
             if (isDustSell || isCurrenciesSell)
             {
+                List<string> finalCoins = new List<string>();
+
                 // получаем информацию по фильтрам, они статичны и достаточно 1 раз получить
                 (bool isSuccessGetExchangeInfo, BinanceExchangeInfo exchangeInfo) = await BinanceApi.GetExchangeInfo(logger: logger);
 
@@ -202,8 +204,8 @@ namespace BinexWorkerService
                     return false;
                 }
 
-                // получим все валюты в балансе аккаунта, кроме USDT
-                (bool isSuccessGetAllCurrencies, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesWithout_USDT_BTC_BNB_Async(exchangeInfo, logger: logger);
+                // получим все валюты в балансе аккаунта, кроме USDT и BNB
+                (bool isSuccessGetAllCurrencies, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesWithout_USDT_BNB_Async(exchangeInfo, logger: logger);
 
                 if (!isSuccessGetAllCurrencies || currencies == null)
                 {
@@ -214,11 +216,15 @@ namespace BinexWorkerService
 
                 if (isCurrenciesSell)
                 {
-                    logger.Trace($"Начинаем продажу монет {string.Join(", ", currencies.Select(x=>x.Asset))}");
+                    logger.Trace($"Начинаем продажу монет {string.Join(", ", currencies.Select(x => x.Asset))}");
                     // пройдем по всем валютам, которые есть на аккаунте и попробуем продать их
                     foreach (var currency in currencies)
                     {
-                        await SellCoin(currenciesInfo, currency.Asset, exchangeInfo, logger);
+                        var finalCoin = await SellCoin(currenciesInfo, currency.Asset, exchangeInfo, logger);
+                        if (!string.IsNullOrEmpty(finalCoin) && finalCoin != StaticClass.USDT && !finalCoins.Contains(finalCoin))
+                        {
+                            finalCoins.Add(finalCoin);
+                        }
                     }
                     logger.Trace("Продажа монет выполнена");
                 }
@@ -230,6 +236,10 @@ namespace BinexWorkerService
                 if (isDustSell)
                 {
                     logger.Trace("Начинаем перевод монет с маленьким балансом в BNB");
+                    if (!finalCoins.Contains(StaticClass.BNB))
+                    {
+                        finalCoins.Add(StaticClass.BNB);
+                    }
 
                     (bool isSuccessGetAllAfterSellCurrencies, List<(string asset, decimal quantity, bool isDust)> currenciesAfterSell) = await BinanceApi.GetAllCurrenciesWithoutUSDTWithQuantityAsync(exchangeInfo, logger: logger);
 
@@ -253,16 +263,18 @@ namespace BinexWorkerService
 
                 if (isCurrenciesSell)
                 {
-                    logger.Trace($"Начинаем продажу BNB и BTC");
+                    logger.Trace($"Начинаем продажу дополнительных монет: {string.Join(", ", finalCoins)}");
 
-                    // т.к. информация по валютам пришла без BNB и перевод пыли производится в BNB, то получем его и включим в обработку.
-                    await SellCoin(currenciesInfo, StaticClass.BNB, exchangeInfo, logger);
-                    // т.к. продажи были и по BTC, то и его продадим.
-                    await SellCoin(currenciesInfo, StaticClass.BTC, exchangeInfo, logger);
+                    foreach (var finalCoin in finalCoins)
+                    {
+                        await SellCoin(currenciesInfo, finalCoin, exchangeInfo, logger);
+                    }
 
-                    logger.Trace($"Закончили продажу BNB и BTC");
+                    logger.Trace($"Закончили продажу дополнительных монет");
                 }
             }
+
+            logger.Trace($"Успешно продались: {string.Join(", ", currenciesInfo.Where(y => y.IsSuccessSell).Select(x => x.Asset))}");
 
             #region Отправка уведомлений
 
@@ -281,47 +293,38 @@ namespace BinexWorkerService
 
             #endregion
 
-            return false;
+            return true;
         }
 
-        private async Task SellCoin(List<CurrencyInfo> currenciesInfo, string currencyAsset, BinanceExchangeInfo exchangeInfo, Logger logger)
+        private async Task<string> SellCoin(List<CurrencyInfo> currenciesInfo, string currencyAsset, BinanceExchangeInfo exchangeInfo, Logger logger)
         {
             logger.Trace($"Продажа {currencyAsset}");
 
             if (string.IsNullOrEmpty(currencyAsset))
             {
-                return;
+                return null;
             }
 
             // получим валюту и определим пыль или нет, если нет, то сразу продадим ее
-            (bool isSuccessCurrency, (string asset, decimal quantity, bool isDust) currencyInfo) = await BinanceApi.GetСurrencyAsync(exchangeInfo, currencyAsset, logger: logger);
+            (bool isSuccessCurrency, (string fromAsset, string toAsset, decimal quantity, bool isDust) currencyInfo) = await BinanceApi.GetСurrencyAsync(exchangeInfo, currencyAsset, logger: logger);
 
-            if (!isSuccessCurrency || string.IsNullOrEmpty(currencyInfo.asset))
+            if (!isSuccessCurrency && (string.IsNullOrEmpty(currencyInfo.fromAsset) || string.IsNullOrEmpty(currencyInfo.toAsset)))
             {
                 logger.Trace($"Продажа {currencyAsset}: неудачное получение валюты.");
-                return;
+                return null;
             }
 
             if (!currencyInfo.isDust)
             {
                 logger.Trace($"Продажа {currencyAsset}: выполним продажу.");
 
-                bool isSuccessSellUSDT = await BinanceApi.SellCoinAsync(exchangeInfo, currencyInfo.quantity, currencyInfo.asset, StaticClass.USDT, logger: logger);
+                bool isSuccessSell = await BinanceApi.SellCoinAsync(exchangeInfo, currencyInfo.quantity, currencyInfo.fromAsset, currencyInfo.toAsset, logger: logger);
 
-                if (isSuccessSellUSDT)
-                {
-                    logger.Trace($"Продажа {currencyAsset}: выполнилась продажа по USDT.");
-                    currenciesInfo.Add(new CurrencyInfo() { Asset = currencyInfo.asset, IsSuccess = true, IsSuccessSell = isSuccessSellUSDT, IsWasNeedToBTC = false });
-                }
-                else if (currencyInfo.asset != StaticClass.BTC)
-                {
-                    bool isSuccessSellBTC = await BinanceApi.SellCoinAsync(exchangeInfo, currencyInfo.quantity, currencyInfo.asset, StaticClass.BTC, logger: logger);
-                    if (isSuccessSellBTC)
-                    {
-                        logger.Trace($"Продажа {currencyAsset}: выполнилась продажа по BTC.");
-                    }
-                }
+                logger.Trace($"Продажа {currencyAsset}:{(isSuccessSell ? "" : " не")} выполнилась продажа по {currencyInfo.toAsset}.");
+                currenciesInfo.Add(new CurrencyInfo() { Asset = currencyInfo.fromAsset, IsSuccessSell = isSuccessSell });
             }
+
+            return currencyInfo.toAsset;
         }
 
         private string CreateEmailBody(List<CurrencyInfo> currenciesInfo, string transferSpot, string transferDust)
@@ -347,7 +350,6 @@ namespace BinexWorkerService
 			<tr>
 				<th style=""text-align: center; padding: 8px; color: #ffffff; background: #324960;"" align=""center"">Криптовалюта</th>
 				<th style=""text-align: center; padding: 8px; color: #ffffff; background: #324960;"" align=""center"">Успешная продажа</th>
-				<th style=""text-align: center; padding: 8px; color: #ffffff; background: #324960;"" align=""center"">Был перевод в BTC</th>
 			</tr>
 			</thead>
 			<tbody>
