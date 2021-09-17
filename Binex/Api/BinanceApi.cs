@@ -71,7 +71,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -101,7 +101,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -149,7 +149,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -196,7 +196,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -228,7 +228,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -261,7 +261,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -297,7 +297,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -333,7 +333,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -366,7 +366,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -400,7 +400,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -431,7 +431,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -477,7 +477,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -510,7 +510,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -541,7 +541,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -572,7 +572,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
@@ -621,7 +621,7 @@ namespace Binex.Api
             var options = new BinanceClientOptions()
             {
                 ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = false
+                AutoTimestamp = true
             };
 
             var client = new BinanceClient(options);
