@@ -23,6 +23,7 @@ namespace Binex.Api
     public static class BinanceApi
     {
         public const HttpStatusCode SuccessCode = HttpStatusCode.OK;
+        public const int DustTransferSixHours = 32110;
 
         /// <summary>
         /// Получение API данных для работы с Binance
@@ -170,7 +171,7 @@ namespace Binex.Api
 
                 if (!isSuccessQuantity)
                 {
-                    return (true, default);
+                    return (false, default);
                 }
 
                 await HelperMethods.Message($"Для {currency.Asset} ({toAsset}) количество определилось как {resultQuantity} из {currency.Free}({currency.Free }), {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
@@ -631,6 +632,12 @@ namespace Binex.Api
             if (result.ResponseStatusCode != SuccessCode)
             {
                 await HelperMethods.Message($"Ошибка. {result.Error}", logger: logger);
+
+                if (result.Error.Code == 32110)
+                {
+                    return (true, "Перевод монет с маленьким балансом не выполнен, т.к. можно производить раз в 6 часов");
+                }
+
                 return (false, null);
             }
 
@@ -649,7 +656,7 @@ namespace Binex.Api
             {
                 (bool isSuccessGetQuantityAnother, decimal resultQuantityAnother, bool isDustAnother, string toAssetAnother) = await GetQuantity(exchangeInfo, fromAsset, null, quantity, logger);
 
-                if (isSuccessGetQuantityAnother)
+                if (isSuccessGetQuantityAnother && !string.IsNullOrEmpty(toAssetAnother))
                 {
                     return (true, resultQuantityAnother, isDustAnother, toAssetAnother);
                 }

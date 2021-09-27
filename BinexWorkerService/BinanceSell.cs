@@ -308,7 +308,7 @@ namespace BinexWorkerService
             // получим валюту и определим пыль или нет, если нет, то сразу продадим ее
             (bool isSuccessCurrency, (string fromAsset, string toAsset, decimal quantity, bool isDust) currencyInfo) = await BinanceApi.GetСurrencyAsync(exchangeInfo, currencyAsset, logger: logger);
 
-            if (!isSuccessCurrency && (string.IsNullOrEmpty(currencyInfo.fromAsset) || string.IsNullOrEmpty(currencyInfo.toAsset)))
+            if (!isSuccessCurrency || string.IsNullOrEmpty(currencyInfo.fromAsset) || string.IsNullOrEmpty(currencyInfo.toAsset))
             {
                 logger.Trace($"Продажа {currencyAsset}: неудачное получение валюты.");
                 return null;
