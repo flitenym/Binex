@@ -499,7 +499,7 @@ namespace SharedLibrary.Helper
                         {
                             logger.Info(Message);
                         }
-                        return true;
+                        return false;
                     }
 
                     return false;
