@@ -377,20 +377,6 @@ $@"1. Файл должен скачиваться по ссылке из инт
         }
 
         /// <summary>
-        /// Получение пути исполняемого файла
-        /// </summary>
-        public string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-
-        /// <summary>
         /// Получение длинны файла из потока
         /// </summary>
         /// <param name="stream">Поток</param>
@@ -497,7 +483,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 }
             }
 
-            ProgramFolderWithFilePath = AssemblyDirectory;
+            ProgramFolderWithFilePath = GetAssemblyPath();
             
             Stream contentStream = null;
             string fileName = string.Empty;

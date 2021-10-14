@@ -1,13 +1,19 @@
+using Binex.FileInfo;
 using Microsoft.Extensions.Hosting;
+using SharedLibrary.Commands;
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace BinexWorkerService
 {
     public class Program
     {
+        public static SettingsFileInfo Settings { get; set; }
+
         public static void Main(string[] args)
         {
+            GetSettingsCommand.Execute(null);
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -19,8 +25,17 @@ namespace BinexWorkerService
                     services.AddCronJob<BinanceSell>(c =>
                     {
                         c.TimeZoneInfo = TimeZoneInfo.Utc;
-                        c.CronExpression = ConfigurationManager.AppSettings["Cron"];
+                        c.CronExpression = Settings.CronExpression;
                     });
                 });
+
+        private static AsyncCommand getSettingsCommand;
+
+        public static AsyncCommand GetSettingsCommand => getSettingsCommand ?? (getSettingsCommand = new AsyncCommand(x => GetSettings()));
+
+        public static async Task GetSettings()
+        {
+            Settings = await FileOperations.GetFileInfo();
+        }
     }
 }

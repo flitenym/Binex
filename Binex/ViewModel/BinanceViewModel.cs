@@ -1,4 +1,5 @@
-﻿using Cronos;
+﻿using Binex.FileInfo;
+using Cronos;
 using SharedLibrary.Commands;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.Classes;
@@ -366,12 +367,23 @@ namespace Binex.ViewModel
                     InfoKeys.BinanceFuturesPercentKey,
                     binanceFuturesPercent);
 
+            await FileOperations.SaveFileInfo(new SettingsFileInfo()
+            {
+                Emails = emails,
+                EmailLogin = emailLogin,
+                EmailPassword = emailPassword,
+                CronExpression = cron,
+                IsCurrenciesSell = isCurrenciesSell.ToString(),
+                IsDustSell = isDustSell.ToString(),
+                IsTransferFromFuturesToSpot = IsTransferFromFuturesToSpot.ToString()
+            });
+
             await HelperMethods.Message("Данные сохранены");
         }
 
         #endregion
 
-        #region Команда для сохранения данных
+        #region Команда для проверки Cron
 
         private AsyncCommand checkNextDateCommand;
 
@@ -438,7 +450,7 @@ namespace Binex.ViewModel
 
                 string cdC = $@"/C cd C:\\";//подключимся к диску С
                 string timeout = $@"timeout /t 1"; //ожидание
-                string installService = $@"sc create {BinexServiceName} binPath={AssemblyDirectory}\BinexWorkerService.exe";
+                string installService = $@"sc create {BinexServiceName} binPath={HelperMethods.GetAssemblyPath()}\BinexWorkerService.exe";
                 string startService = $@"net start ""{BinexServiceName}""";
 
                 pc.StartInfo.Arguments = $"{cdC} && {timeout} && {installService} && {startService}";

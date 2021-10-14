@@ -5,6 +5,7 @@ using Binance.Net.Objects.Spot;
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
 using Binance.Net.Objects.Spot.WalletData;
+using Binex.FileInfo;
 using Binex.Helper.StaticInfo;
 using CryptoExchange.Net.Authentication;
 using NLog;
@@ -28,7 +29,7 @@ namespace Binex.Api
         /// <summary>
         /// Получение API данных для работы с Binance
         /// </summary>
-        public static async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiDataAsync(Logger logger = null)
+        public static async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiDataAsync(SettingsFileInfo settings = null, Logger logger = null)
         {
             if (logger == null)
             {
@@ -43,16 +44,30 @@ namespace Binex.Api
             }
             else
             {
-                var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
-                var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
-
-                if (!string.IsNullOrEmpty(apiKey?.Value) && !string.IsNullOrEmpty(apiSecret?.Value))
+                if (settings == null)
                 {
-                    return (true, apiKey.Value, apiSecret.Value);
+                    var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
+                    var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
+
+                    if (!string.IsNullOrEmpty(apiKey?.Value) && !string.IsNullOrEmpty(apiSecret?.Value))
+                    {
+                        return (true, apiKey.Value, apiSecret.Value);
+                    }
+                    else
+                    {
+                        return (false, null, null);
+                    }
                 }
                 else
                 {
-                    return (false, null, null);
+                    if (!string.IsNullOrEmpty(settings.ApiKey) && !string.IsNullOrEmpty(settings.ApiSecret))
+                    {
+                        return (true, settings.ApiKey, settings.ApiSecret);
+                    }
+                    else
+                    {
+                        return (false, null, null);
+                    }
                 }
             }
         }
@@ -60,9 +75,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение всех криптовалют у пользователя, с балансом > 0 без USDT и BNB
         /// </summary>
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesWithout_USDT_BNB_Async(BinanceExchangeInfo exchangeInfo, Logger logger = null)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetAllCurrenciesWithout_USDT_BNB_Async(BinanceExchangeInfo exchangeInfo, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -90,9 +105,9 @@ namespace Binex.Api
             return (true, currencies);
         }
 
-        public static async Task<(bool IsSuccess, List<(string Asset, decimal Quantity, bool IsDust)> Currencies)> GetAllCurrenciesWithoutUSDTWithQuantityAsync(BinanceExchangeInfo exchangeInfo, Logger logger = null)
+        public static async Task<(bool IsSuccess, List<(string Asset, decimal Quantity, bool IsDust)> Currencies)> GetAllCurrenciesWithoutUSDTWithQuantityAsync(BinanceExchangeInfo exchangeInfo, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -123,7 +138,7 @@ namespace Binex.Api
 
             foreach (var currency in currencies)
             {
-                (bool isSuccessGetQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, logger);
+                (bool isSuccessGetQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, settings: settings, logger: logger);
 
                 if (isSuccessGetQuantity)
                 {
@@ -138,9 +153,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение информации по криптовалюте
         /// </summary>
-        public static async Task<(bool IsSuccess, (string FromAsset, string ToAsset, decimal Quantity, bool IsDust) Currency)> GetСurrencyAsync(BinanceExchangeInfo exchangeInfo, string asset, Logger logger = null)
+        public static async Task<(bool IsSuccess, (string FromAsset, string ToAsset, decimal Quantity, bool IsDust) Currency)> GetСurrencyAsync(BinanceExchangeInfo exchangeInfo, string asset, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -167,7 +182,7 @@ namespace Binex.Api
 
             if (currency != null)
             {
-                (bool isSuccessQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, logger);
+                (bool isSuccessQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, settings: settings, logger: logger);
 
                 if (!isSuccessQuantity)
                 {
@@ -185,9 +200,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение всех криптовалют у пользователя, с балансом > 0, и без BNB
         /// </summary>
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesWithoutBNBAsync(Logger logger = null)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesWithoutBNBAsync(SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -217,9 +232,9 @@ namespace Binex.Api
         /// Получение всех криптовалют у пользователя, с балансом > 0, и равной asset
         /// </summary>
         /// <param name="asset">Получение информации по указанной валюте</param>
-        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesByAssetAsync(string asset, Logger logger = null)
+        public static async Task<(bool IsSuccess, List<BinanceBalance> Currencies)> GetGeneralAllCurrenciesByAssetAsync(string asset, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -250,9 +265,9 @@ namespace Binex.Api
         /// Получение информации по валюте у пользователя
         /// </summary>
         /// <param name="asset">Криптовалюта</param>
-        public static async Task<(bool IsSuccess, BinanceUserCoin Currency)> GetCoinAsync(string asset, Logger logger = null)
+        public static async Task<(bool IsSuccess, BinanceUserCoin Currency)> GetCoinAsync(string asset, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -286,9 +301,9 @@ namespace Binex.Api
         /// <param name="amount">Сумма перевода</param>
         /// <param name="address">Адрес, кому переводится</param>
         /// <param name="network">Сеть, по которой переводится</param>
-        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string address, string network, Logger logger = null)
+        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string address, string network, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -322,9 +337,9 @@ namespace Binex.Api
         /// <param name="interval">Интервал данных</param>
         /// <param name="startDate">Начало периода</param>
         /// <param name="endDate">Конец периода</param>
-        public static async Task<(bool IsSuccess, decimal? Average)> GetAverageBetweenCurreniesAsync(string fromAsset, string toAsset, Binance.Net.Enums.KlineInterval interval, DateTime startDate, DateTime endDate, Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal? Average)> GetAverageBetweenCurreniesAsync(string fromAsset, string toAsset, Binance.Net.Enums.KlineInterval interval, DateTime startDate, DateTime endDate, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync();
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -355,9 +370,9 @@ namespace Binex.Api
         /// </summary>
         /// <param name="fromAsset">Первая валюта</param>
         /// <param name="toAsset">Вторая валюта</param>
-        public static async Task<(bool IsSuccess, BinancePrice Price)> GetPrice(string fromAsset, string toAsset, Logger logger = null)
+        public static async Task<(bool IsSuccess, BinancePrice Price)> GetPrice(string fromAsset, string toAsset, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -385,13 +400,12 @@ namespace Binex.Api
         /// <summary>
         /// Продажа монеты
         /// </summary>
-        /// <param name="exchangeInfo">Общая информация по валютам</param>
         /// <param name="quantity">Количество перевода</param>
         /// <param name="fromAsset">Из какой валюты</param>
         /// <param name="toAsset">В какую валюту</param>
-        public static async Task<bool> SellCoinAsync(BinanceExchangeInfo exchangeInfo, decimal quantity, string fromAsset, string toAsset = "USDT", Logger logger = null)
+        public static async Task<bool> SellCoinAsync(decimal quantity, string fromAsset, string toAsset = "USDT", SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -420,9 +434,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение баланса по Фьючерсу
         /// </summary>
-        public static async Task<(bool IsSuccess, decimal? Balance)> GetFuturesUsdtAccountUsdtBalanceAsync(Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal? Balance)> GetFuturesUsdtAccountUsdtBalanceAsync(SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -459,16 +473,16 @@ namespace Binex.Api
         /// <summary>
         /// Перевод из Фьючерс USDT в SPOT USDT
         /// </summary>
-        public static async Task<bool> TransferSpotToUsdtAsync(Logger logger = null)
+        public static async Task<bool> TransferSpotToUsdtAsync(SettingsFileInfo settings = null, Logger logger = null)
         {
-            (bool isAccountUsdtSuccess, decimal? balance) = await GetFuturesUsdtAccountUsdtBalanceAsync(logger: logger);
+            (bool isAccountUsdtSuccess, decimal? balance) = await GetFuturesUsdtAccountUsdtBalanceAsync(settings: settings, logger: logger);
 
             if (!isAccountUsdtSuccess)
             {
                 return false;
             }
 
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -499,9 +513,9 @@ namespace Binex.Api
         /// </summary>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static async Task<(bool IsSuccess, Dictionary<string, BinanceAssetDetails> AssetDetails)> GetBinanceAssetDetails(Logger logger = null)
+        public static async Task<(bool IsSuccess, Dictionary<string, BinanceAssetDetails> AssetDetails)> GetBinanceAssetDetails(SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -530,9 +544,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение системной информации бинанса, включая минимальные значения по валютам
         /// </summary>
-        public static async Task<(bool IsSuccess, BinanceExchangeInfo ExchangeInfo)> GetExchangeInfo(Logger logger = null)
+        public static async Task<(bool IsSuccess, BinanceExchangeInfo ExchangeInfo)> GetExchangeInfo(SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -561,9 +575,9 @@ namespace Binex.Api
         /// <summary>
         /// Получение средней цены между монетами
         /// </summary>
-        public static async Task<(bool IsSuccess, decimal Average)> GetAverageInfo(string fromAsset, string toAsset, Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal Average)> GetAverageInfo(string fromAsset, string toAsset, SettingsFileInfo settings = null, Logger logger = null)
         {
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -594,7 +608,7 @@ namespace Binex.Api
         /// </summary>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static async Task<(bool IsSuccess, string Message)> TransferDustAsync(List<(string assetCurrency, decimal quantityCurrency, bool isDustCurrency)> currencies, Logger logger = null)
+        public static async Task<(bool IsSuccess, string Message)> TransferDustAsync(List<(string assetCurrency, decimal quantityCurrency, bool isDustCurrency)> currencies, SettingsFileInfo settings = null, Logger logger = null)
         {
             List<string> assets = new List<string>();
 
@@ -612,7 +626,7 @@ namespace Binex.Api
                 logger?.Trace($"Монеты с маленьким балансом: {string.Join(", ", assets)}");
             }
 
-            var apiData = await GetApiDataAsync(logger: logger);
+            var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
             if (!apiData.IsSuccess)
             {
@@ -644,9 +658,9 @@ namespace Binex.Api
             return (true, "Перевод монет с маленьким балансом выполнен.");
         }
 
-        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, decimal quantity, Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, decimal quantity, SettingsFileInfo settings = null, Logger logger = null)
         {
-            (bool isSuccessGetQuantityUSDT, decimal resultQuantityUsdt, bool isDustUsdt, string toAssetUsdt) = await GetQuantity(exchangeInfo, fromAsset, StaticClass.USDT, quantity, logger);
+            (bool isSuccessGetQuantityUSDT, decimal resultQuantityUsdt, bool isDustUsdt, string toAssetUsdt) = await GetQuantity(exchangeInfo, fromAsset, StaticClass.USDT, quantity, settings: settings, logger: logger);
 
             if (isSuccessGetQuantityUSDT && !string.IsNullOrEmpty(toAssetUsdt))
             {
@@ -654,7 +668,7 @@ namespace Binex.Api
             }
             else if (string.IsNullOrEmpty(toAssetUsdt))
             {
-                (bool isSuccessGetQuantityAnother, decimal resultQuantityAnother, bool isDustAnother, string toAssetAnother) = await GetQuantity(exchangeInfo, fromAsset, null, quantity, logger);
+                (bool isSuccessGetQuantityAnother, decimal resultQuantityAnother, bool isDustAnother, string toAssetAnother) = await GetQuantity(exchangeInfo, fromAsset, null, quantity, settings: settings, logger: logger);
 
                 if (isSuccessGetQuantityAnother && !string.IsNullOrEmpty(toAssetAnother))
                 {
@@ -672,7 +686,7 @@ namespace Binex.Api
         /// <param name="asset">Валюта</param>
         /// <param name="quantity">Количество для продажи</param>
         /// <returns></returns>
-        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, Logger logger = null)
+        public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, SettingsFileInfo settings = null, Logger logger = null)
         {
             BinanceSymbol symbolInfo = null;
             if (string.IsNullOrEmpty(toAsset))
@@ -693,7 +707,7 @@ namespace Binex.Api
             var symbolFilterLotSize = symbolInfo.LotSizeFilter;
             var symbolFilterMinNotional = symbolInfo.MinNotionalFilter;
 
-            (bool isSuccessGetPriceInfo, BinancePrice price) = await GetPrice(fromAsset, symbolInfo.QuoteAsset, logger);
+            (bool isSuccessGetPriceInfo, BinancePrice price) = await GetPrice(fromAsset, symbolInfo.QuoteAsset, settings: settings, logger: logger);
 
             if (!isSuccessGetPriceInfo)
             {

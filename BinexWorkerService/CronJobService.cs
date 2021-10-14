@@ -1,4 +1,5 @@
-﻿using Cronos;
+﻿using Binex.FileInfo;
+using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedLibrary.Helper;
@@ -14,6 +15,7 @@ namespace BinexWorkerService
         private System.Timers.Timer _timer;
         private CronExpression _expression;
         private readonly TimeZoneInfo _timeZoneInfo;
+        public SettingsFileInfo Settings { get; set; }
 
         protected CronJobService(string cronExpression, TimeZoneInfo timeZoneInfo)
         {
@@ -23,16 +25,15 @@ namespace BinexWorkerService
 
         public virtual async Task StartAsync(CancellationToken cancellationToken)
         {
+            Settings = await FileOperations.GetFileInfo();
             await ScheduleJob(cancellationToken);
         }
 
         protected virtual async Task ScheduleJob(CancellationToken cancellationToken)
         {
-            var cron = await HelperMethods.GetByKeyInDBAsync(InfoKeys.CronKey);
-
-            if (cron?.Value != null)
+            if (Settings.CronExpression != null)
             {
-                _expression = CronExpression.Parse(cron.Value);
+                _expression = CronExpression.Parse(Settings.CronExpression);
             }
 
             var next = _expression.GetNextOccurrence(DateTimeOffset.Now, _timeZoneInfo);
