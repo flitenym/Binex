@@ -1,5 +1,6 @@
 ﻿using LicenseGenerator;
 using SharedLibrary.AbstractClasses;
+using SharedLibrary.FileInfo;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.Provider;
@@ -72,6 +73,8 @@ namespace SharedLibrary
                     splashScreen.Close();
                     return;
                 }
+
+                SettingsFileInfo settings = await FileOperations.GetFileInfo();
 
                 Application.Current.MainWindow = mainWindow;
                 mainWindow.Show();

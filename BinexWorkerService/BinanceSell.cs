@@ -1,13 +1,11 @@
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
 using Binex.Api;
-using Binex.FileInfo;
+using SharedLibrary.FileInfo;
 using Binex.Helper.StaticInfo;
 using BinexWorkerService.Models;
-using Microsoft.Extensions.Logging;
 using NLog;
 using SharedLibrary.Helper;
-using SharedLibrary.Helper.StaticInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +47,9 @@ namespace BinexWorkerService
             _logger.Trace($"Запуск продажи");
             try
             {
+                //в случае, если настройки изменились
+                Settings = await FileOperations.GetFileInfo(_logger);
+
                 bool isSuccess = await Sell(_logger);
                 if (isSuccess)
                 {

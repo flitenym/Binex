@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Binex.FileInfo
+﻿namespace SharedLibrary.FileInfo
 {
     public static class FileConstants
     {

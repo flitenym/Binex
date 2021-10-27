@@ -1,6 +1,6 @@
-﻿using Binex.FileInfo;
-using Cronos;
+﻿using Cronos;
 using SharedLibrary.Commands;
+using SharedLibrary.FileInfo;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.Classes;
 using SharedLibrary.Helper.StaticInfo;
@@ -322,6 +322,24 @@ namespace Binex.ViewModel
 
         private async Task SaveAsync()
         {
+            bool isSuccessSave = await FileOperations.SaveFileInfo(new SettingsFileInfo()
+            {
+                ApiKey = apiKey,
+                ApiSecret = apiSecret,
+                Emails = emails,
+                EmailLogin = emailLogin,
+                EmailPassword = emailPassword,
+                CronExpression = cron,
+                IsCurrenciesSell = isCurrenciesSell.ToString(),
+                IsDustSell = isDustSell.ToString(),
+                IsTransferFromFuturesToSpot = IsTransferFromFuturesToSpot.ToString()
+            });
+
+            if (!isSuccessSave)
+            {
+                return;
+            }
+
             CronExpression cronExpression = await GetCronExpression();
 
             if (cronExpression == null)
@@ -366,17 +384,6 @@ namespace Binex.ViewModel
             SharedProvider.SetToSingleton(
                     InfoKeys.BinanceFuturesPercentKey,
                     binanceFuturesPercent);
-
-            await FileOperations.SaveFileInfo(new SettingsFileInfo()
-            {
-                Emails = emails,
-                EmailLogin = emailLogin,
-                EmailPassword = emailPassword,
-                CronExpression = cron,
-                IsCurrenciesSell = isCurrenciesSell.ToString(),
-                IsDustSell = isDustSell.ToString(),
-                IsTransferFromFuturesToSpot = IsTransferFromFuturesToSpot.ToString()
-            });
 
             await HelperMethods.Message("Данные сохранены");
         }

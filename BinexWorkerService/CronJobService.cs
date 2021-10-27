@@ -1,9 +1,7 @@
-﻿using Binex.FileInfo;
+﻿using SharedLibrary.FileInfo;
 using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedLibrary.Helper;
-using SharedLibrary.Helper.StaticInfo;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

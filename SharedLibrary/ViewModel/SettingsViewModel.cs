@@ -607,7 +607,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
         {
             DirectoryInfo dir = new DirectoryInfo(FolderName);
 
-            foreach (FileInfo fi in dir.GetFiles())
+            foreach (var fi in dir.GetFiles())
             {
                 fi.Delete();
             }

@@ -5,10 +5,10 @@ using Binance.Net.Objects.Spot;
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
 using Binance.Net.Objects.Spot.WalletData;
-using Binex.FileInfo;
 using Binex.Helper.StaticInfo;
 using CryptoExchange.Net.Authentication;
 using NLog;
+using SharedLibrary.FileInfo;
 using SharedLibrary.Helper;
 using SharedLibrary.Helper.StaticInfo;
 using SharedLibrary.Provider;
@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Binex.Api
@@ -31,44 +30,52 @@ namespace Binex.Api
         /// </summary>
         public static async Task<(bool IsSuccess, string ApiKey, string ApiSecret)> GetApiDataAsync(SettingsFileInfo settings = null, Logger logger = null)
         {
-            if (logger == null)
+            try
             {
-                if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiKeyBinanceKey) is string apiKeyValue &&
-                SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiSecretBinanceKey) is string apiSecretValue)
+                if (logger == null)
                 {
-                    return (true, apiKeyValue, apiSecretValue);
-                }
-
-                await HelperMethods.Message("Не удалось получить данные Api, проверьте настройки", logger: logger);
-                return (false, null, null);
-            }
-            else
-            {
-                if (settings == null)
-                {
-                    var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
-                    var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
-
-                    if (!string.IsNullOrEmpty(apiKey?.Value) && !string.IsNullOrEmpty(apiSecret?.Value))
+                    if (SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiKeyBinanceKey) is string apiKeyValue &&
+                    SharedProvider.GetFromDictionaryByKey(InfoKeys.ApiSecretBinanceKey) is string apiSecretValue)
                     {
-                        return (true, apiKey.Value, apiSecret.Value);
+                        return (true, apiKeyValue, apiSecretValue);
                     }
-                    else
-                    {
-                        return (false, null, null);
-                    }
+
+                    await HelperMethods.Message("Не удалось получить данные Api, проверьте настройки", logger: logger);
+                    return (false, null, null);
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(settings.ApiKey) && !string.IsNullOrEmpty(settings.ApiSecret))
+                    if (settings == null)
                     {
-                        return (true, settings.ApiKey, settings.ApiSecret);
+                        var apiKey = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiKeyBinanceKey);
+                        var apiSecret = await HelperMethods.GetByKeyInDBAsync(InfoKeys.ApiSecretBinanceKey);
+
+                        if (!string.IsNullOrEmpty(apiKey?.Value) && !string.IsNullOrEmpty(apiSecret?.Value))
+                        {
+                            return (true, apiKey.Value, apiSecret.Value);
+                        }
+                        else
+                        {
+                            return (false, null, null);
+                        }
                     }
                     else
                     {
-                        return (false, null, null);
+                        if (!string.IsNullOrEmpty(settings.ApiKey) && !string.IsNullOrEmpty(settings.ApiSecret))
+                        {
+                            return (true, settings.ApiKey, settings.ApiSecret);
+                        }
+                        else
+                        {
+                            return (false, null, null);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                await HelperMethods.Message($"Не удалось получить данные Api {ex.Message}", logger: logger);
+                return (false, null, null);
             }
         }
 
@@ -301,7 +308,7 @@ namespace Binex.Api
         /// <param name="amount">Сумма перевода</param>
         /// <param name="address">Адрес, кому переводится</param>
         /// <param name="network">Сеть, по которой переводится</param>
-        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, string toAsset, decimal amount, string address, string network, SettingsFileInfo settings = null, Logger logger = null)
+        public static async Task<bool> WithdrawalPlacedAsync(string fromAsset, decimal amount, string address, string network, SettingsFileInfo settings = null, Logger logger = null)
         {
             var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 

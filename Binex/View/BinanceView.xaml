@@ -25,7 +25,7 @@
                     CanVerticallyScroll="True"
                     Orientation="Vertical">
                     <TextBox
-                        materialDesign:HintAssist.Hint="Api Key"
+                        materialDesign:HintAssist.Hint="Api Key*"
                         AcceptsReturn="True"
                         HorizontalScrollBarVisibility="Auto"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -33,7 +33,7 @@
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
                     <TextBox
-                        materialDesign:HintAssist.Hint="Api Secret"
+                        materialDesign:HintAssist.Hint="Api Secret*"
                         AcceptsReturn="True"
                         HorizontalScrollBarVisibility="Auto"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -72,7 +72,7 @@
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
                     <TextBox
-                        materialDesign:HintAssist.Hint="Уведомления от кого Login (Gmail)"
+                        materialDesign:HintAssist.Hint="Уведомления от кого Login (Gmail) *"
                         AcceptsReturn="True"
                         HorizontalScrollBarVisibility="Auto"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -80,7 +80,7 @@
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
                     <TextBox
-                        materialDesign:HintAssist.Hint="Уведомления от кого Password (Gmail)"
+                        materialDesign:HintAssist.Hint="Уведомления от кого Password (Gmail) *"
                         AcceptsReturn="True"
                         HorizontalScrollBarVisibility="Auto"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -97,7 +97,7 @@
                     <TextBox
                         Height="50"
                         Margin="2"
-                        materialDesign:HintAssist.Hint="Название сервиса"
+                        materialDesign:HintAssist.Hint="Название сервиса *"
                         AcceptsReturn="True"
                         HorizontalScrollBarVisibility="Auto"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -113,7 +113,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Margin="2"
-                            materialDesign:HintAssist.Hint="Работа сервиса"
+                            materialDesign:HintAssist.Hint="Работа сервиса *"
                             AcceptsReturn="True"
                             HorizontalScrollBarVisibility="Auto"
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -133,15 +133,15 @@
                     <CheckBox
                         Height="50"
                         IsChecked="{Binding IsTransferFromFuturesToSpot}"
-                        Content="Перевод USDT из Фьючерс в Спот"/>
+                        Content="Перевод USDT из Фьючерс в Спот *"/>
                     <CheckBox
                         Height="50"
                         IsChecked="{Binding IsDustSell}"
-                        Content="Перевод монет с маленьким балансом в BNB"/>
+                        Content="Перевод монет с маленьким балансом в BNB *"/>
                     <CheckBox
                         Height="50"
                         IsChecked="{Binding IsCurrenciesSell}"
-                        Content="Продажа криптовалют"/>
+                        Content="Продажа криптовалют *"/>
                     <Grid Height="50">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
