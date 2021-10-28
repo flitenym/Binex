@@ -367,7 +367,7 @@ GROUP BY UserID
                 return;
             }
 
-            var numberPay = await SQLExecutor.SelectFirstExecutorAsync<int?>("SELECT NumberPay FROM PayHistory ORDER BY NumberPay DESC LIMIT 1") ?? 1;
+            var numberPay = (await SQLExecutor.SelectFirstExecutorAsync<int?>("SELECT NumberPay FROM PayHistory ORDER BY NumberPay DESC LIMIT 1") ?? 0) + 1;
 
             NumberFormatInfo setPrecision = new NumberFormatInfo() { NumberDecimalDigits = 6, NumberGroupSeparator = "", NumberDecimalSeparator = "." };
 
@@ -391,7 +391,7 @@ SET IsPaid = 'Да'
 WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
 ");
 
-                        var payHistory = new PayHistory() { UserID = payInfo.UserID.ToString(), SendedUsdt = Math.Round(payInfo.UsdtToPay.Value, 4), PayTime = DateTime.Now.ToString(), NumberPay = numberPay };
+                        var payHistory = new PayHistory() { UserID = payInfo.UserID.ToString(), UserName = payInfo.UserName, SendedUsdt = Math.Round(payInfo.UsdtToPay.Value, 4), PayTime = DateTime.Now.ToString(), NumberPay = numberPay };
                         await SQLExecutor.InsertExecutorAsync(payHistory, payHistory);
                     }
                 }

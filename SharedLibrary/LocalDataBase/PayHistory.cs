@@ -13,6 +13,9 @@ namespace SharedLibrary.LocalDataBase.Models
         [Description("Идентификатор пользователя")]
         public string UserID { get; set; }
 
+        [Description("ФИО пользователя")]
+        public string UserName { get; set; }
+
         [Description("USDT")]
         public decimal SendedUsdt { get; set; }
 
