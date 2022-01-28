@@ -221,10 +221,8 @@ WHERE LoadingDateTime not in (
                     }
 
                     await HelperMethods.Message($"Найдено {listObj.Count} строк, выполняется загрузка в БД");
-                    for (int i = 0; i < listObj.Count; i++)
-                    {
-                        await SQLExecutor.InsertExecutorAsync(modelClassItem, listObj[i]);
-                    }
+
+                    await SQLExecutor.InsertSeveralExecutorAsync(modelClassItem, listObj);
 
                     await DeleteBeforeDataAsync();
                 }
