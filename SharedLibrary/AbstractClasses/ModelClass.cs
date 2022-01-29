@@ -56,7 +56,7 @@ namespace SharedLibrary.AbstractClasses
 
         #endregion
 
-        public string InsertQuery(object obj)
+        public string InsertQuery(object obj, bool needReturnIndex = true)
         {
             var typeProperties = obj.GetType().GetProperties();
             var properties = HelperMethods.GetProperties(typeProperties);
@@ -73,7 +73,7 @@ namespace SharedLibrary.AbstractClasses
             fields = fields.Substring(2, fields.Length - 2);
             values = values.Substring(2, values.Length - 2);
 
-            return $"INSERT INTO {obj.GetType().Name} ({fields}) VALUES ({values});  select last_insert_rowid()";
+            return $"INSERT INTO {obj.GetType().Name} ({fields}) VALUES ({values});  {(needReturnIndex ? "select last_insert_rowid()" : "")}";
         }
 
         public string UpdateQuery(object obj, object ID)
