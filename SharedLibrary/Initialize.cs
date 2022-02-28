@@ -74,7 +74,7 @@ namespace SharedLibrary
                     return;
                 }
 
-                SettingsFileInfo settings = await FileOperations.GetFileInfo();
+                SettingsFileInfo settings = await FileOperations.GetFileInfoAsync();
 
                 Application.Current.MainWindow = mainWindow;
                 mainWindow.Show();

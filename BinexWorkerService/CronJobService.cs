@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace BinexWorkerService
 {
@@ -23,7 +24,7 @@ namespace BinexWorkerService
 
         public virtual async Task StartAsync(CancellationToken cancellationToken)
         {
-            Settings = await FileOperations.GetFileInfo();
+            Settings = await FileOperations.GetFileInfoAsync();
             await ScheduleJob(cancellationToken);
         }
 
@@ -94,17 +95,17 @@ namespace BinexWorkerService
 
     public static class ScheduledServiceExtensions
     {
-        public static IServiceCollection AddCronJob<T>(this IServiceCollection services, Action<IScheduleConfig<T>> options) where T : CronJobService
+        public static IServiceCollection AddCronJob<T>(this IServiceCollection services, Action<IScheduleConfig<T>> options, Logger _logger) where T : CronJobService
         {
             if (options == null)
             {
-                throw new ArgumentNullException(nameof(options), @"Please provide Schedule Configurations.");
+                _logger.Error($"{nameof(options)} Please provide Schedule Configurations.");
             }
             var config = new ScheduleConfig<T>();
             options.Invoke(config);
             if (string.IsNullOrWhiteSpace(config.CronExpression))
             {
-                throw new ArgumentNullException(nameof(ScheduleConfig<T>.CronExpression), @"Empty Cron Expression is not allowed.");
+                _logger.Error($"{nameof(ScheduleConfig<T>.CronExpression)} Empty Cron Expression is not allowed.");
             }
 
             services.AddSingleton<IScheduleConfig<T>>(config);

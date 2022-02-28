@@ -322,7 +322,7 @@ namespace Binex.ViewModel
 
         private async Task SaveAsync()
         {
-            bool isSuccessSave = await FileOperations.SaveFileInfo(new SettingsFileInfo()
+            bool isSuccessSave = await FileOperations.SaveFileInfoAsync(new SettingsFileInfo()
             {
                 ApiKey = apiKey,
                 ApiSecret = apiSecret,
@@ -455,9 +455,11 @@ namespace Binex.ViewModel
                 Process pc = new Process();
                 pc.StartInfo.FileName = "cmd.exe";
 
+                string path = Path.Combine(HelperMethods.GetAssemblyPath(), "BinexWorkerService.exe");
+
                 string cdC = $@"/C cd C:\\";//подключимся к диску С
                 string timeout = $@"timeout /t 1"; //ожидание
-                string installService = $@"sc create {BinexServiceName} binPath={HelperMethods.GetAssemblyPath()}\BinexWorkerService.exe";
+                string installService = $@"sc create ""{BinexServiceName}"" binPath=""{path}""";
                 string startService = $@"net start ""{BinexServiceName}""";
 
                 pc.StartInfo.Arguments = $"{cdC} && {timeout} && {installService} && {startService}";
@@ -485,7 +487,7 @@ namespace Binex.ViewModel
 
                 string cdC = $@"/C cd C:\\";//подключимся к диску С
                 string timeout = $@"timeout /t 1"; //ожидание
-                string uninstallService = $@"sc delete {BinexServiceName}";
+                string uninstallService = $@"sc delete ""{BinexServiceName}""";
 
                 pc.StartInfo.Arguments = $"{cdC} && {timeout} && {uninstallService}";
                 pc.Start();

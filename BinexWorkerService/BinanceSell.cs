@@ -48,7 +48,7 @@ namespace BinexWorkerService
             try
             {
                 //в случае, если настройки изменились
-                Settings = await FileOperations.GetFileInfo(_logger);
+                Settings = await FileOperations.GetFileInfoAsync(_logger);
 
                 bool isSuccess = await Sell(_logger);
                 if (isSuccess)

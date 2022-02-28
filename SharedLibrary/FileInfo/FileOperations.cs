@@ -11,45 +11,47 @@ namespace SharedLibrary.FileInfo
     public static class FileOperations
     {
         public static string FileName => Path.Combine(HelperMethods.GetAssemblyPath(), FileConstants.FileName);
-        public static async Task<SettingsFileInfo> GetFileInfo(Logger logger = null)
+
+        public static (SettingsFileInfo Settings, string Message) GetFileInfo(Logger logger = null)
         {
             string fileName = FileName;
             SettingsFileInfo settings = new SettingsFileInfo();
 
-            try
+            if (!File.Exists(fileName))
             {
-                if (!File.Exists(fileName))
+                (bool isSuccess, string message) = SaveFileInfo(settings, logger: logger);
+                return (settings, $"Данные не полные, заполните все необходимые данные. {message}");
+            }
+            else
+            {
+                using (Stream stream = new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
-                    await SaveFileInfo(settings);
-                    await HelperMethods.Message("Данные не полные, заполните все необходимые данные.", logger: logger);
-                    return settings;
-                }
-                else
-                {
-                    using (Stream stream = new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                    IFormatter formatter = new BinaryFormatter();
+                    if (stream.Length != 0)
                     {
-                        IFormatter formatter = new BinaryFormatter();
-                        if (stream.Length != 0)
-                        {
-                            return (SettingsFileInfo)formatter.Deserialize(stream);
-                        }
-                        else
-                        {
-                            await HelperMethods.Message("Данные не полные, заполните все необходимые данные.", logger: logger);
-                            return settings;
-                        }
+                        return ((SettingsFileInfo)formatter.Deserialize(stream), null);
+                    }
+                    else
+                    {
+                        return (settings, "Данные не полные, заполните все необходимые данные.");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                await HelperMethods.Message(ex.Message, logger: logger);
-                await HelperMethods.Message("Данные не полные, заполните все необходимые данные.", logger: logger);
-                return settings;
-            }
         }
 
-        public static async Task<bool> SaveFileInfo(SettingsFileInfo settings, Logger logger = null)
+        public static async Task<SettingsFileInfo> GetFileInfoAsync(Logger logger = null)
+        {
+            (SettingsFileInfo settings, string message) = GetFileInfo(logger: logger);
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                await HelperMethods.Message(message, logger: logger);
+            }
+
+            return settings;
+        }
+
+        public static (bool IsSuccess, string Message) SaveFileInfo(SettingsFileInfo settings, Logger logger = null)
         {
             try
             {
@@ -59,20 +61,28 @@ namespace SharedLibrary.FileInfo
                     {
                         IFormatter formatter = new BinaryFormatter();
                         formatter.Serialize(stream, settings);
-                        return true;
+                        return (true, null);
                     }
                 }
                 else
                 {
-                    await HelperMethods.Message("Данные не полные, заполните все необходимые данные.");
-                    return false;
+                    return (true, "Данные не полные, заполните все необходимые данные.");
                 }
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message(ex.Message, logger: logger);
-                return false;
+                return (false, ex.Message);
             }
+        }
+
+        public static async Task<bool> SaveFileInfoAsync(SettingsFileInfo settings, Logger logger = null)
+        {
+            (bool isSuccess, string message) = SaveFileInfo(settings, logger: logger);
+            if (!string.IsNullOrEmpty(message))
+            {
+                await HelperMethods.Message(message, logger: logger);
+            }
+            return isSuccess;
         }
     }
 }
