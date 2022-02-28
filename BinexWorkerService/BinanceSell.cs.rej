@@ -1,9 +1,0 @@
-diff a/BinexWorkerService/BinanceSell.cs b/BinexWorkerService/BinanceSell.cs	(rejected hunks)
-@@ -94,6 +94,7 @@
-                 logger.Error($"�� ������ ������ �� ����� ����������� � ����������.");
-                 isNeedSendEmail = false;
-             }
-+            return true;
- 
-             (bool isSuccess, List<BinanceBalance> currencies) = await BinanceApi.GetAllCurrenciesAsync(logger: logger);
- 

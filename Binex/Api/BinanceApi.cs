@@ -1,10 +1,7 @@
 ﻿using Binance.Net;
+using Binance.Net.Clients;
 using Binance.Net.Objects;
-using Binance.Net.Objects.Futures.MarketData;
-using Binance.Net.Objects.Spot;
-using Binance.Net.Objects.Spot.MarketData;
-using Binance.Net.Objects.Spot.SpotData;
-using Binance.Net.Objects.Spot.WalletData;
+using Binance.Net.Objects.Models.Spot;
 using Binex.Helper.StaticInfo;
 using CryptoExchange.Net.Authentication;
 using NLog;
@@ -74,7 +71,7 @@ namespace Binex.Api
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message($"Не удалось получить данные Api {ex.Message}", logger: logger);
+                await HelperMethods.Message($"Не удалось получить данные Api {ex.ToString()}", logger: logger);
                 return (false, null, null);
             }
         }
@@ -93,13 +90,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetAccountInfoAsync();
+            var result = await client.SpotApi.Account.GetAccountInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -107,7 +103,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BNB).ToList();
+            var currencies = result.Data.Balances.Where(x => x.Available != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BNB).ToList();
 
             return (true, currencies);
         }
@@ -123,13 +119,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetAccountInfoAsync();
+            var result = await client.SpotApi.Account.GetAccountInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -138,18 +133,18 @@ namespace Binex.Api
             }
 
             //требуется поставить на первое место BTC, т.к. при продаже возможны переводы в BTC и нам продажа снова и снова будет не очень
-            var currencies = result.Data.Balances.Where(x => x.Free != 0 && x.Asset == StaticClass.BTC).Concat(
-                result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC && x.Asset != StaticClass.BNB)).ToList();
+            var currencies = result.Data.Balances.Where(x => x.Available != 0 && x.Asset == StaticClass.BTC).Concat(
+                result.Data.Balances.Where(x => x.Available != 0 && x.Asset != StaticClass.USDT && x.Asset != StaticClass.BTC && x.Asset != StaticClass.BNB)).ToList();
 
             List<(string, decimal, bool)> currenciesData = new List<(string, decimal, bool)>();
 
             foreach (var currency in currencies)
             {
-                (bool isSuccessGetQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, settings: settings, logger: logger);
+                (bool isSuccessGetQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Available * 0.98m, settings: settings, logger: logger);
 
                 if (isSuccessGetQuantity)
                 {
-                    await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Free}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
+                    await HelperMethods.Message($"Для {currency.Asset} количество определилось как {resultQuantity} из {currency.Available}, {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
                     currenciesData.Add((currency.Asset, resultQuantity, isDust));
                 }
             }
@@ -171,13 +166,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetAccountInfoAsync();
+            var result = await client.SpotApi.Account.GetAccountInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -185,23 +179,26 @@ namespace Binex.Api
                 return (false, default);
             }
 
-            var currency = result.Data.Balances.FirstOrDefault(x => x.Free != 0 && x.Asset == asset);
+            var currency = result.Data.Balances.FirstOrDefault(x => x.Available != 0 && x.Asset == asset);
 
             if (currency != null)
             {
-                (bool isSuccessQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Free * 0.98m, settings: settings, logger: logger);
+                (bool isSuccessQuantity, decimal resultQuantity, bool isDust, string toAsset) = await GetQuantity(exchangeInfo, currency.Asset, currency.Available * 0.98m, settings: settings, logger: logger);
 
                 if (!isSuccessQuantity)
                 {
                     return (false, default);
                 }
 
-                await HelperMethods.Message($"Для {currency.Asset} ({toAsset}) количество определилось как {resultQuantity} из {currency.Free}({currency.Free }), {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
+                await HelperMethods.Message($"Для {currency.Asset} ({toAsset}) количество определилось как {resultQuantity} из {currency.Available}({currency.Available}), {(isDust ? "ПЫЛЬ" : "НЕ ПЫЛЬ")}.", logger: logger);
 
                 return (true, (currency.Asset, toAsset, resultQuantity, isDust));
             }
-
-            return (true, default);
+            else
+            {
+                await HelperMethods.Message($"Не найдена монета {asset}", logger: logger);
+                return (true, default);
+            }
         }
 
         /// <summary>
@@ -218,13 +215,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetAccountInfoAsync();
+            var result = await client.SpotApi.Account.GetAccountInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -232,7 +228,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            return (true, result.Data.Balances.Where(x => x.Free != 0 && x.Asset != StaticClass.BNB).ToList());
+            return (true, result.Data.Balances.Where(x => x.Available != 0 && x.Asset != StaticClass.BNB).ToList());
         }
 
         /// <summary>
@@ -250,13 +246,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetAccountInfoAsync();
+            var result = await client.SpotApi.Account.GetAccountInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -265,14 +260,14 @@ namespace Binex.Api
             }
 
             //требуется поставить на первое место BTC, т.к. при продаже возможны переводы в BTC и нам продажа снова и снова будет не очень
-            return (true, result.Data.Balances.Where(x => x.Free != 0 && x.Asset == asset).ToList());
+            return (true, result.Data.Balances.Where(x => x.Available != 0 && x.Asset == asset).ToList());
         }
 
         /// <summary>
         /// Получение информации по валюте у пользователя
         /// </summary>
         /// <param name="asset">Криптовалюта</param>
-        public static async Task<(bool IsSuccess, BinanceUserCoin Currency)> GetCoinAsync(string asset, SettingsFileInfo settings = null, Logger logger = null)
+        public static async Task<(bool IsSuccess, BinanceUserAsset Currency)> GetCoinAsync(string asset, SettingsFileInfo settings = null, Logger logger = null)
         {
             var apiData = await GetApiDataAsync(settings: settings, logger: logger);
 
@@ -283,13 +278,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.GetUserCoinsAsync();
+            var result = await client.SpotApi.Account.GetUserAssetsAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -297,7 +291,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            return (true, result.Data.FirstOrDefault(x => x.Coin == asset));
+            return (true, result.Data.FirstOrDefault(x => x.Asset == asset));
         }
 
         /// <summary>
@@ -319,13 +313,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.WithdrawDeposit.WithdrawAsync(asset: fromAsset, address: address, amount: amount, network: network);
+            var result = await client.SpotApi.Account.WithdrawAsync(asset: fromAsset, address: address, quantity: amount, network: network);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -355,13 +348,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.Market.GetKlinesAsync($"{fromAsset}{toAsset}", interval, startDate, endDate);
+            var result = await client.SpotApi.ExchangeData.GetKlinesAsync($"{fromAsset}{toAsset}", interval, startDate, endDate);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -369,7 +361,7 @@ namespace Binex.Api
                 return (false, null);
             }
 
-            return (true, result.Data.Average(x => x.Open));
+            return (true, result.Data.Average(x => x.OpenPrice));
         }
 
         /// <summary>
@@ -388,13 +380,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.Market.GetPriceAsync($"{fromAsset}{toAsset}");
+            var result = await client.SpotApi.ExchangeData.GetPriceAsync($"{fromAsset}{toAsset}");
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -421,13 +412,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.Order.PlaceOrderAsync($"{fromAsset}{toAsset}", Binance.Net.Enums.OrderSide.Sell, Binance.Net.Enums.OrderType.Market, quoteOrderQuantity: quantity);
+            var result = await client.SpotApi.Trading.PlaceOrderAsync($"{fromAsset}{toAsset}", Binance.Net.Enums.OrderSide.Sell, Binance.Net.Enums.SpotOrderType.Market, quoteQuantity: quantity);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -452,13 +442,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var accountInfoResult = await client.FuturesUsdt.Account.GetAccountInfoAsync();
+            var accountInfoResult = await client.UsdFuturesApi.Account.GetAccountInfoAsync();
 
             if (accountInfoResult.ResponseStatusCode != SuccessCode)
             {
@@ -498,13 +487,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.Futures.TransferFuturesAccountAsync(StaticClass.USDT, balance.Value, Binance.Net.Enums.FuturesTransferType.FromUsdtFuturesToSpot);
+            var result = await client.GeneralApi.Futures.TransferFuturesAccountAsync(StaticClass.USDT, balance.Value, Binance.Net.Enums.FuturesTransferType.FromUsdtFuturesToSpot);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -531,13 +519,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.WithdrawDeposit.GetAssetDetailsAsync();
+            var result = await client.SpotApi.ExchangeData.GetAssetDetailsAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -562,13 +549,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.System.GetExchangeInfoAsync();
+            var result = await client.SpotApi.ExchangeData.GetExchangeInfoAsync();
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -593,13 +579,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.Spot.Market.GetCurrentAvgPriceAsync($"{fromAsset}{toAsset}");
+            var result = await client.SpotApi.ExchangeData.GetCurrentAvgPriceAsync($"{fromAsset}{toAsset}");
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -642,13 +627,12 @@ namespace Binex.Api
 
             var options = new BinanceClientOptions()
             {
-                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret),
-                AutoTimestamp = true
+                ApiCredentials = new ApiCredentials(apiData.ApiKey, apiData.ApiSecret)
             };
 
             var client = new BinanceClient(options);
 
-            var result = await client.General.DustTransferAsync(assets);
+            var result = await client.SpotApi.Account.DustTransferAsync(assets);
 
             if (result.ResponseStatusCode != SuccessCode)
             {
@@ -695,14 +679,14 @@ namespace Binex.Api
         /// <returns></returns>
         public static async Task<(bool IsSuccess, decimal Quantity, bool IsDust, string ToAsset)> GetQuantity(BinanceExchangeInfo exchangeInfo, string fromAsset, string toAsset, decimal quantity, SettingsFileInfo settings = null, Logger logger = null)
         {
-            BinanceSymbol symbolInfo = null;
+            BinanceSymbol symbolInfo;
             if (string.IsNullOrEmpty(toAsset))
             {
-                symbolInfo = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset);
+                symbolInfo = exchangeInfo?.Symbols?.FirstOrDefault(x => x?.BaseAsset == fromAsset);
             }
             else
             {
-                symbolInfo = exchangeInfo.Symbols.FirstOrDefault(x => x.BaseAsset == fromAsset && x.QuoteAsset == toAsset);
+                symbolInfo = exchangeInfo?.Symbols?.FirstOrDefault(x => x?.BaseAsset == fromAsset && x?.QuoteAsset == toAsset);
             }
 
             if (symbolInfo == null)

@@ -449,7 +449,7 @@ namespace SharedLibrary.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    Task.Factory.StartNew(async () => await Message($"{ex.Message}"));
+                    Task.Factory.StartNew(async () => await Message($"{ex.ToString()}"));
                 }
             }
         }

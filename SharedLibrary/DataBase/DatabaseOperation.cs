@@ -57,7 +57,7 @@ namespace SharedLibrary.DataBase
             }
             catch (Exception ex)
             {
-                await Message($"ConnectionString неверный, проверьте адрес сервера {ex.Message}");
+                await Message($"ConnectionString неверный, проверьте адрес сервера {ex.ToString()}");
                 canGetData = false;
             }
         }

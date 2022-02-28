@@ -333,7 +333,7 @@ namespace SharedLibrary.Helper
             }
             catch (Exception ex)
             {
-                throw new InvalidCastException("Ошибка " + ex.Message);
+                throw new InvalidCastException("Ошибка " + ex.ToString());
             }
         }
 
@@ -518,11 +518,11 @@ namespace SharedLibrary.Helper
             {
                 if (logger == null)
                 {
-                    GetModalOk($"Ошибка: {ex.Message}");
+                    GetModalOk($"Ошибка: {ex.ToString()}");
                 }
                 else
                 {
-                    logger.Info($"Ошибка: {ex.Message}");
+                    logger.Info($"Ошибка: {ex.ToString()}");
                 }
 
                 return false;

@@ -71,7 +71,7 @@ namespace SharedLibrary.FileInfo
             }
             catch (Exception ex)
             {
-                return (false, ex.Message);
+                return (false, ex.ToString());
             }
         }
 

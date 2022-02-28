@@ -1,5 +1,3 @@
-using Binance.Net.Objects.Spot.MarketData;
-using Binance.Net.Objects.Spot.SpotData;
 using Binex.Api;
 using SharedLibrary.FileInfo;
 using Binex.Helper.StaticInfo;
@@ -11,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Binance.Net.Objects.Models.Spot;
 
 namespace BinexWorkerService
 {
@@ -62,7 +61,7 @@ namespace BinexWorkerService
             }
             catch (Exception ex)
             {
-                _logger?.Info($"Продажа прошла с ошибками {ex.Message}");
+                _logger?.Info($"Продажа прошла с ошибками {ex.ToString()}");
             }
 
             return;
@@ -197,7 +196,7 @@ namespace BinexWorkerService
                 // получаем информацию по фильтрам, они статичны и достаточно 1 раз получить
                 (bool isSuccessGetExchangeInfo, BinanceExchangeInfo exchangeInfo) = await BinanceApi.GetExchangeInfo(settings: Settings, logger: logger);
 
-                if (!isSuccessGetExchangeInfo)
+                if (!isSuccessGetExchangeInfo || exchangeInfo == null)
                 {
                     logger.Error("Ошибка получения информации минимальных требований по символам для перевода");
                     return false;
@@ -307,7 +306,7 @@ namespace BinexWorkerService
             // получим валюту и определим пыль или нет, если нет, то сразу продадим ее
             (bool isSuccessCurrency, (string fromAsset, string toAsset, decimal quantity, bool isDust) currencyInfo) = await BinanceApi.GetСurrencyAsync(exchangeInfo, currencyAsset, settings: settings, logger: logger);
 
-            if (!isSuccessCurrency || string.IsNullOrEmpty(currencyInfo.fromAsset) || string.IsNullOrEmpty(currencyInfo.toAsset))
+            if (!isSuccessCurrency || currencyInfo == default || string.IsNullOrEmpty(currencyInfo.fromAsset) || string.IsNullOrEmpty(currencyInfo.toAsset))
             {
                 logger.Trace($"Продажа {currencyAsset}: неудачное получение валюты.");
                 return null;

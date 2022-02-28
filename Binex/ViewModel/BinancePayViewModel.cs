@@ -1,4 +1,4 @@
-﻿using Binance.Net.Objects.Spot.WalletData;
+﻿using Binance.Net.Objects.Models.Spot;
 using Binex.Api;
 using Binex.Helper.StaticInfo;
 using SharedLibrary.Commands;
@@ -432,7 +432,7 @@ WHERE UserID = {payInfo.UserID} and IsPaid = 'Нет'
                 return;
             }
 
-            Balance = coinInfo.Currency.Free;
+            Balance = coinInfo.Currency.Available;
         }
 
         #endregion

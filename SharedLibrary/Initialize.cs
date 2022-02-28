@@ -96,7 +96,7 @@ namespace SharedLibrary
                     }
                     catch (Exception ex)
                     {
-                        await HelperMethods.Message($"{ex.Message}");
+                        await HelperMethods.Message($"{ex.ToString()}");
                     }
                 };
             });

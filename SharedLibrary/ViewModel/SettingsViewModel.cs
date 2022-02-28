@@ -462,7 +462,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
             }
             catch (Exception ex)
             {
-                await Message(ex.Message);
+                await Message(ex.ToString());
             }
         }
 
@@ -532,7 +532,7 @@ $@"1. Файл должен скачиваться по ссылке из инт
                 }
                 catch (Exception ex)
                 {
-                    await Message(ex.Message);
+                    await Message(ex.ToString());
                     IsDownload = false;
                     CheckFolder(TempFolderPath);
                 }

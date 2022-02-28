@@ -97,7 +97,7 @@ namespace LicenseGenerator
             }
             catch (Exception ex)
             {
-                return (null, $"Ошибка чтения файла лицензии: {ex.Message}");
+                return (null, $"Ошибка чтения файла лицензии: {ex.ToString()}");
             }
         }
 

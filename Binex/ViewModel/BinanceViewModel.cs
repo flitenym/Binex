@@ -304,17 +304,17 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("was not found"))
+                if (ex.ToString().Contains("was not found"))
                 {
                     await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
                 }
-                else if (ex.Message.Contains("Cannot open"))
+                else if (ex.ToString().Contains("Cannot open"))
                 {
                     await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
                 }
                 else
                 {
-                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.ToString()}");
                 }
                 return false;
             }
@@ -412,7 +412,7 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message($"Неверный формат Cron: {ex.Message}");
+                await HelperMethods.Message($"Неверный формат Cron: {ex.ToString()}");
                 return null;
             }
         }
@@ -467,7 +467,7 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message(ex.Message);
+                await HelperMethods.Message(ex.ToString());
             }
         }
         #endregion
@@ -494,7 +494,7 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message(ex.Message);
+                await HelperMethods.Message(ex.ToString());
             }
         }
         #endregion
@@ -513,7 +513,7 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message(ex.Message);
+                await HelperMethods.Message(ex.ToString());
             }
         }
         #endregion
@@ -547,17 +547,17 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("was not found"))
+                if (ex.ToString().Contains("was not found"))
                 {
                     await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
                 }
-                else if (ex.Message.Contains("Cannot open"))
+                else if (ex.ToString().Contains("Cannot open"))
                 {
                     await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
                 }
                 else
                 {
-                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.ToString()}");
                 }
                 return false;
             }
@@ -595,17 +595,17 @@ namespace Binex.ViewModel
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("was not found"))
+                if (ex.ToString().Contains("was not found"))
                 {
                     await HelperMethods.Message($"Сервис не найден {BinexServiceName}");
                 }
-                else if (ex.Message.Contains("Cannot open"))
+                else if (ex.ToString().Contains("Cannot open"))
                 {
                     await HelperMethods.Message($"Сервис помечен на удаление, повторите операцию позже {BinexServiceName}");
                 }
                 else
                 {
-                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.Message}");
+                    await HelperMethods.Message($"Не удалось перезапустить сервис: {ex.ToString()}");
                 }
                 return false;
             }

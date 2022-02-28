@@ -14,6 +14,7 @@ namespace BinexWorkerService
 
         public static void Main(string[] args)
         {
+            System.Diagnostics.Debugger.Launch();
             _logger = LogManager.GetLogger(nameof(BinanceSell));
             GetSettings();
             CreateHostBuilder(args).Build().Run();
@@ -34,7 +35,7 @@ namespace BinexWorkerService
                     }
                     catch (Exception ex)
                     {
-                        _logger.Trace($"Не установить время хроноса сервис: {ex.Message}");
+                        _logger.Trace($"Не установить время хроноса сервис: {ex.ToString()}");
                     }
                 });
 

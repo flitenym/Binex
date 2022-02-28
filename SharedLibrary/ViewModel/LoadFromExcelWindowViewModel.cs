@@ -233,7 +233,7 @@ WHERE LoadingDateTime not in (
             }
             catch (Exception ex)
             {
-                await HelperMethods.Message($"{ex.Message}");
+                await HelperMethods.Message($"{ex.ToString()}");
             }
         }
 
